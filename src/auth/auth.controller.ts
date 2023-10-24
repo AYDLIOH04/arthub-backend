@@ -1,20 +1,8 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
-import { Tokens } from './types';
-import { RefreshTokenGuard } from 'src/common/guards';
-import {
-  GetCurrentUser,
-  GetCurrentUserId,
-  Public,
-} from 'src/common/decorators';
+import { Tokens, User } from './types';
+import { GetCurrentUserId, Public } from 'src/common/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -23,14 +11,14 @@ export class AuthController {
   @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
-  signup(@Body() dto: AuthDto): Promise<Tokens> {
+  signup(@Body() dto: AuthDto): Promise<User> {
     return this.authService.signup(dto);
   }
 
   @Public()
   @Post('signin')
   @HttpCode(HttpStatus.OK)
-  signin(@Body() dto: AuthDto): Promise<Tokens> {
+  signin(@Body() dto: AuthDto): Promise<User> {
     return this.authService.signin(dto);
   }
 
@@ -40,14 +28,11 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  @Public()
-  @UseGuards(RefreshTokenGuard)
+  // @Public()
+  // @UseGuards(RefreshTokenGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(
-    @GetCurrentUserId() userId: number,
-    @GetCurrentUser('refreshToken') refreshToken: string,
-  ) {
-    return this.authService.refreshTokens(userId, refreshToken);
+  refreshTokens(@GetCurrentUserId() userId: number): Promise<User> {
+    return this.authService.refreshTokens(userId);
   }
 }
