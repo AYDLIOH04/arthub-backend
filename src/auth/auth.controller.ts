@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto';
-import { Tokens, User } from './types';
+import { AuthDto, RefreshDto } from './dto';
+import { User } from './types';
 import { GetCurrentUserId, Public } from 'src/common/decorators';
 
 @Controller('auth')
@@ -28,11 +28,10 @@ export class AuthController {
     return this.authService.logout(userId);
   }
 
-  // @Public()
-  // @UseGuards(RefreshTokenGuard)
+  @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(@GetCurrentUserId() userId: number): Promise<User> {
-    return this.authService.refreshTokens(userId);
+  refreshTokens(@Body() dto: RefreshDto) {
+    return this.authService.refreshTokens(dto.email);
   }
 }

@@ -56,10 +56,10 @@ export class AuthService {
     });
   }
 
-  async refreshTokens(userId: number): Promise<User> {
+  async refreshTokens(email: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: userId,
+        email,
       },
     });
 
@@ -67,15 +67,8 @@ export class AuthService {
     if (!user.refreshToken)
       throw new ForbiddenException('Пользователь не авторизован');
 
-    // const refreshTokenMatches = await bcrypt.compare(
-    //   refreshToken,
-    //   user.refreshToken,
-    // );
-
-    // if (!refreshTokenMatches) throw new ForbiddenException('Access denied');
-
-    const newAccessToken = await this.getNewAccessToken(user.id, user.email);
-    return { accessToken: newAccessToken, email: user.email };
+    const newAccessToken = await this.getNewAccessToken(user.id, email);
+    return { accessToken: newAccessToken, email };
   }
 
   private hashData(data: string) {
