@@ -93,7 +93,7 @@ export class AuthService {
       },
       {
         secret: 'access-token-secret',
-        expiresIn: 15 * 60,
+        expiresIn: 60 * 60,
       },
     );
 
@@ -109,7 +109,7 @@ export class AuthService {
         },
         {
           secret: 'access-token-secret',
-          expiresIn: 15 * 60,
+          expiresIn: 60 * 60,
         },
       ),
       this.jwt.signAsync(
