@@ -2,14 +2,14 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto';
 import * as bcrypt from 'bcrypt';
-import { Tokens, User } from './types';
+import { Auth, Refresh, Tokens } from './types';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
-  async signup(dto: AuthDto): Promise<User> {
+  async signup(dto: AuthDto): Promise<Auth> {
     const hash = await this.hashData(dto.password);
 
     const newUser = await this.prisma.user.create({
@@ -21,10 +21,14 @@ export class AuthService {
 
     const tokens = await this.getTokens(newUser.id, newUser.email);
     await this.updateRefreshTokenHash(newUser.id, tokens.refresh_token);
-    return { accessToken: tokens.access_token, email: newUser.email };
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      email: newUser.email,
+    };
   }
 
-  async signin(dto: AuthDto): Promise<User> {
+  async signin(dto: AuthDto): Promise<Auth> {
     const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
@@ -39,7 +43,11 @@ export class AuthService {
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
-    return { accessToken: tokens.access_token, email: user.email };
+    return {
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      email: user.email,
+    };
   }
 
   async logout(userId: number) {
@@ -56,10 +64,10 @@ export class AuthService {
     });
   }
 
-  async refreshTokens(email: string): Promise<User> {
+  async refreshTokens(userId: number, refreshToken: string): Promise<Refresh> {
     const user = await this.prisma.user.findUnique({
       where: {
-        email,
+        id: userId,
       },
     });
 
@@ -67,30 +75,18 @@ export class AuthService {
     if (!user.refreshToken)
       throw new ForbiddenException('Пользователь не авторизован');
 
-    const newAccessToken = await this.getNewAccessToken(user.id, email);
-    return { accessToken: newAccessToken, email };
+    const rtMatches = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!rtMatches) throw new ForbiddenException('Доступ запрещен');
+
+    const token = await this.getNewAccessToken(user.id, user.email);
+    return {
+      access_token: token,
+      email: user.email,
+    };
   }
 
   private hashData(data: string) {
     return bcrypt.hash(data, 10);
-  }
-
-  private async getNewAccessToken(
-    userId: number,
-    email: string,
-  ): Promise<string> {
-    const accessToken = this.jwt.signAsync(
-      {
-        sub: userId,
-        email,
-      },
-      {
-        secret: 'access-token-secret',
-        expiresIn: 60 * 60,
-      },
-    );
-
-    return accessToken;
   }
 
   private async getTokens(userId: number, email: string): Promise<Tokens> {
@@ -123,6 +119,24 @@ export class AuthService {
     };
   }
 
+  private async getNewAccessToken(
+    userId: number,
+    email: string,
+  ): Promise<string> {
+    const accessToken = this.jwt.signAsync(
+      {
+        sub: userId,
+        email,
+      },
+      {
+        secret: 'access-token-secret',
+        expiresIn: 60 * 60,
+      },
+    );
+
+    return accessToken;
+  }
+
   private async updateRefreshTokenHash(userId: number, refreshToken: string) {
     const hash = await this.hashData(refreshToken);
     await this.prisma.user.update({
@@ -133,5 +147,7 @@ export class AuthService {
         refreshToken: hash,
       },
     });
+
+    return hash;
   }
 }
