@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { BrushDto } from '../auth/dto/brush.dto';
 import { FilesService } from '../files/files.service';
+import {BrushDto} from "./dto/brush.dto";
 
 @Injectable()
 export class BrushService {

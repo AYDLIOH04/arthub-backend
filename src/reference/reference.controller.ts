@@ -10,7 +10,7 @@ import {
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ReferenceService } from './reference.service';
-import { ReferenceDto } from '../auth/dto/reference.dto';
+import { ReferenceDto } from './dto/reference.dto';
 
 @Controller('reference')
 export class ReferenceController {

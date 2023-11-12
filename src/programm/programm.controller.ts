@@ -10,7 +10,7 @@ import {
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProgrammService } from './programm.service';
-import { ProgrammDto } from '../auth/dto/programm.dto';
+import { ProgrammDto } from './dto/programm.dto';
 
 @Controller('programm')
 export class ProgrammController {

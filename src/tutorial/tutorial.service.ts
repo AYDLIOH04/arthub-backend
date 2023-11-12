@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
-import { TutorialDto } from '../auth/dto/tutorial.dto';
+import { TutorialDto } from './dto/tutorial.dto';
 
 @Injectable()
 export class TutorialService {

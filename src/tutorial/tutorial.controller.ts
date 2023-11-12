@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { TutorialDto } from '../auth/dto/tutorial.dto';
+import { TutorialDto } from './dto/tutorial.dto';
 import { TutorialService } from './tutorial.service';
 
 @Controller('tutorial')

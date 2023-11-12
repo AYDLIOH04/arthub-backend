@@ -10,8 +10,8 @@ import {
 } from '@nestjs/common';
 import { Public } from '../common/decorators';
 import { BrushService } from './brush.service';
-import { BrushDto } from '../auth/dto/brush.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import {BrushDto} from "./dto/brush.dto";
 
 @Controller('brush')
 export class BrushController {

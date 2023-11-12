@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
-import { ReferenceDto } from '../auth/dto/reference.dto';
+import { ReferenceDto } from './dto/reference.dto';
 
 @Injectable()
 export class ReferenceService {
