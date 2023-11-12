@@ -15,16 +15,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  email String @unique
-  hash  String
+  email        String  @unique
+  hash         String
   refreshToken String?
 
-  firstName String?
-  lastName  String?  
-  
-  brushes Brush[]
-  references Reference[]
-  tutorials Tutorial[]
+  login String
+
+  brushes    Int[] @unique
+  references Int[] @unique
+  tutorials  Int[] @unique
+  programm   Int[] @unique
 
   @@map("users")
 }
@@ -34,13 +34,11 @@ model Brush {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String
+  title       String @unique
   link        String
-  description String?
-  image       String?
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  description String
+  programm    String
+  image       String
 
   @@map("brushes")
 }
@@ -50,12 +48,9 @@ model Reference {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String
-  description String?
-  image       String?
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  title       String @unique
+  description String
+  image       String
 
   @@map("references")
 }
@@ -65,13 +60,23 @@ model Tutorial {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String
+  title       String @unique
   link        String
-  description String?
-  image       String?
-
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
+  description String
+  image       String
 
   @@map("tutorials")
+}
+
+model Programm {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  title       String @unique
+  link        String
+  description String
+  image       String
+
+  @@map("programms")
 }

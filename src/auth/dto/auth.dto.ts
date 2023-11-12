@@ -10,4 +10,9 @@ export class AuthDto {
   @IsString()
   @MinLength(5)
   password: string;
+
+
+  login: string;
+
+
 }
