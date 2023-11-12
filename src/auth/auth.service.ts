@@ -16,7 +16,7 @@ export class AuthService {
       data: {
         email: dto.email,
         hash,
-        login: dto.login
+        login: dto.login,
       },
     });
 
@@ -93,24 +93,24 @@ export class AuthService {
   private async getTokens(userId: number, email: string): Promise<Tokens> {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(
-          {
-            sub: userId,
-            email,
-          },
-          {
-            secret: process.env.JWT_ACCESS_SECRET,
-            expiresIn: 60 * 60,
-          },
+        {
+          sub: userId,
+          email,
+        },
+        {
+          secret: process.env.JWT_ACCESS_SECRET,
+          expiresIn: 60 * 60,
+        },
       ),
       this.jwt.signAsync(
-          {
-            sub: userId,
-            email,
-          },
-          {
-            secret: process.env.JWT_REFRESH_SECRET,
-            expiresIn: 7 * 24 * 60 * 60,
-          },
+        {
+          sub: userId,
+          email,
+        },
+        {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: 7 * 24 * 60 * 60,
+        },
       ),
     ]);
 
@@ -121,18 +121,18 @@ export class AuthService {
   }
 
   private async getNewAccessToken(
-      userId: number,
-      email: string,
+    userId: number,
+    email: string,
   ): Promise<string> {
     const accessToken = this.jwt.signAsync(
-        {
-          sub: userId,
-          email,
-        },
-        {
-          secret: process.env.JWT_ACCESS_SECRET,
-          expiresIn: 60 * 60,
-        },
+      {
+        sub: userId,
+        email,
+      },
+      {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: 60 * 60,
+      },
     );
 
     return accessToken;

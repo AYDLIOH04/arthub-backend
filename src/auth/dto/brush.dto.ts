@@ -1,16 +1,15 @@
-import {IsInt, IsString} from "class-validator";
-import { Type } from "class-transformer";
+import { IsInt, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class BrushDto{
+export class BrushDto {
+  title: any;
 
-    title: any;
+  link: any;
 
-    link: any;
+  description: any;
 
-    description: any
+  programm: any;
 
-    programm: any
-
-    @Type(() => File)
-    image: any
+  @Type(() => File)
+  image: any;
 }

@@ -1,14 +1,13 @@
-import {IsInt, IsString} from "class-validator";
-import { Type } from "class-transformer";
+import { IsInt, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class ProgrammDto{
+export class ProgrammDto {
+  title: any;
 
-    title: any;
+  link: any;
 
-    link: any;
+  description: any;
 
-    description: any
-
-    @Type(() => File)
-    image: any
+  @Type(() => File)
+  image: any;
 }

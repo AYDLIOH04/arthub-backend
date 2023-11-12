@@ -11,8 +11,5 @@ export class AuthDto {
   @MinLength(5)
   password: string;
 
-
   login: string;
-
-
 }
