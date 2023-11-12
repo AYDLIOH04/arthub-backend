@@ -97,7 +97,7 @@ export class AuthService {
           email,
         },
         {
-          secret: 'access-token-secret',
+          secret: process.env.JWT_ACCESS_SECRET,
           expiresIn: 60 * 60,
         },
       ),
@@ -107,7 +107,7 @@ export class AuthService {
           email,
         },
         {
-          secret: 'refresh-token-secret',
+          secret: process.env.JWT_REFRESH_SECRET,
           expiresIn: 7 * 24 * 60 * 60,
         },
       ),
@@ -129,7 +129,7 @@ export class AuthService {
         email,
       },
       {
-        secret: 'access-token-secret',
+        secret: process.env.JWT_ACCESS_SECRET,
         expiresIn: 60 * 60,
       },
     );
