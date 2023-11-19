@@ -48,9 +48,9 @@ model Reference {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String @unique
-  description String
-  image       String
+  title   String @unique
+  hashtag String
+  image   String
 
   @@map("references")
 }
@@ -73,10 +73,10 @@ model Programm {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  title       String @unique
+  name        String @unique
   link        String
   description String
-  image       String
+  logo        String
 
   @@map("programms")
 }

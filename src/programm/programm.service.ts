@@ -1,36 +1,61 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { FilesService } from '../files/files.service';
-import { ProgrammDto } from './dto/programm.dto';
+import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import {PrismaService} from '../prisma/prisma.service';
+import {FilesService} from '../files/files.service';
+import {ProgramDto} from './dto/programm.dto';
 
 @Injectable()
 export class ProgrammService {
-  constructor(
-    private prisma: PrismaService,
-    private fileService: FilesService,
-  ) {}
+    constructor(
+        private prisma: PrismaService,
+        private fileService: FilesService,
+    ) {
+    }
 
-  async createProgramm(dto: ProgrammDto, image: any) {
-    const fileName = await this.fileService.createFile(image);
-    const newProgramm = await this.prisma.programm.create({
-      data: { ...dto, image: fileName },
-    });
-    return newProgramm;
-  }
+    async createProgramm(dto: ProgramDto, logo: any) {
+      const allPrograms = await this.prisma.programm.findMany();
+      let flag = true;
 
-  async addToUser(programmID, userID) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
-    });
-    user.programm.push(programmID);
-    return user;
-  }
+      for (let i = 0; i < allPrograms.length; i++) {
+        if (dto.name == allPrograms[i].name || dto.link == allPrograms[i].link) {
+          flag = false;
+        }
+      }
+      if (flag) {
+        const fileName = await this.fileService.createFile(logo);
+        const newProgram = await this.prisma.programm.create({
+          data: {...dto, logo: fileName},
+        });
+        return newProgram;
+      } else {
+        throw new HttpException(
+            'Такая программа или ссылка уже есть',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+    }
 
-  async removeFromUser(programmID, userID) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
-    });
-    delete user.programm[programmID];
-    return user;
-  }
+    async addToUser(programmID, userID) {
+        const user = await this.prisma.user.findUnique({
+            where: {id: Number(userID)},
+        });
+        this.checkUser(user)
+        user.programm.push(programmID);
+        return user;
+    }
+
+    async removeFromUser(programmID, userID) {
+        const user = await this.prisma.user.findUnique({
+            where: {id: Number(userID)},
+        });
+        this.checkUser(user)
+        delete user.programm[programmID];
+        return user;
+    }
+
+    checkUser(user){
+        if (!user) {throw new HttpException(
+            'Такого юзера нет',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+        );}
+    }
 }

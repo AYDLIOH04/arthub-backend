@@ -4,7 +4,7 @@ import {
   Get,
   Param,
   Post,
-  Put,
+  Put, Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -42,7 +42,7 @@ export class BrushController {
   }
 
   @Public()
-  @Post(':userID')
+  @Post('user/:userID')
   showUserBrushes(@Param('userID') userID: string) {
     return this.brushService.showUserBrushes(userID);
   }
@@ -51,5 +51,11 @@ export class BrushController {
   @Get()
   showAllBrushes() {
     return this.brushService.showAllBrushes();
+  }
+
+  @Public()
+  @Get('filt')
+  sortByProgram(@Query('program') program: string){
+    return this.brushService.sortByProgramm(program)
   }
 }

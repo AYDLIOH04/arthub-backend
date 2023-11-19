@@ -10,16 +10,16 @@ import {
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProgrammService } from './programm.service';
-import { ProgrammDto } from './dto/programm.dto';
+import {ProgramDto} from './dto/programm.dto';
 
-@Controller('programm')
+@Controller('program')
 export class ProgrammController {
   constructor(private programmService: ProgrammService) {}
   @Public()
-  @UseInterceptors(FileInterceptor('image'))
+  @UseInterceptors(FileInterceptor('logo'))
   @Post('create')
-  createBrush(@Body() dto: ProgrammDto, @UploadedFile() image) {
-    return this.programmService.createProgramm(dto, image);
+  createProgram(@Body() dto: ProgramDto, @UploadedFile() logo) {
+    return this.programmService.createProgramm(dto, logo);
   }
 
   @Public()

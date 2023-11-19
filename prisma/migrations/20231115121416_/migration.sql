@@ -35,7 +35,7 @@ CREATE TABLE "references" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "title" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
+    "hashtag" TEXT NOT NULL,
     "image" TEXT NOT NULL,
 
     CONSTRAINT "references_pkey" PRIMARY KEY ("id")
@@ -59,10 +59,10 @@ CREATE TABLE "programms" (
     "id" SERIAL NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "title" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "link" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "image" TEXT NOT NULL,
+    "logo" TEXT NOT NULL,
 
     CONSTRAINT "programms_pkey" PRIMARY KEY ("id")
 );
@@ -92,4 +92,4 @@ CREATE UNIQUE INDEX "references_title_key" ON "references"("title");
 CREATE UNIQUE INDEX "tutorials_title_key" ON "tutorials"("title");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "programms_title_key" ON "programms"("title");
+CREATE UNIQUE INDEX "programms_name_key" ON "programms"("name");

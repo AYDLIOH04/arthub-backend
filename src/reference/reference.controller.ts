@@ -3,7 +3,7 @@ import {
   Controller,
   Get,
   Param,
-  Post,
+  Post, Put, Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,12 +18,12 @@ export class ReferenceController {
   @Public()
   @UseInterceptors(FileInterceptor('image'))
   @Post('create')
-  createBrush(@Body() dto: ReferenceDto, @UploadedFile() image) {
+  createReference(@Body() dto: ReferenceDto, @UploadedFile() image) {
     return this.referenceService.createReference(dto, image);
   }
 
   @Public()
-  @Post('add/:referenceID/:userID')
+  @Put('add/:referenceID/:userID')
   addToUser(
     @Param('referenceID') referenceID: string,
     @Param('userID') userID: string,
@@ -38,5 +38,29 @@ export class ReferenceController {
     @Param('userID') userID: string,
   ) {
     return this.referenceService.removeFromUser(referenceID, userID);
+  }
+
+  @Public()
+  @Post(':userID')
+  showUserReferences(@Param('userID') userID: string) {
+    return this.referenceService.showUserReferences(userID);
+  }
+
+  @Public()
+  @Get()
+  showAllReference() {
+    return this.referenceService.showAllReferences();
+  }
+
+  @Public()
+  @Get('filt_name')
+  sortByName(@Query('name') name: string){
+    return this.referenceService.sortByName(name)
+  }
+
+  @Public()
+  @Get('filt_tag')
+  sortByHashtag(@Query('tag') tag: string){
+    return this.referenceService.sortByHashtag(tag)
   }
 }
