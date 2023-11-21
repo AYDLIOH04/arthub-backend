@@ -10,7 +10,7 @@ import {
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProgrammService } from './programm.service';
-import {ProgramDto} from './dto/programm.dto';
+import { ProgramDto } from './dto/programm.dto';
 
 @Controller('program')
 export class ProgrammController {
@@ -38,5 +38,11 @@ export class ProgrammController {
     @Param('userID') userID: string,
   ) {
     return this.programmService.removeFromUser(programmID, userID);
+  }
+
+  @Public()
+  @Get()
+  showAllPrograms() {
+    return this.programmService.showAllPrograms();
   }
 }

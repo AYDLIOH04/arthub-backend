@@ -1,4 +1,4 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
 import { TutorialDto } from './dto/tutorial.dto';
@@ -14,20 +14,23 @@ export class TutorialService {
     let allTutorials = await this.prisma.tutorial.findMany();
     let flag = true;
     for (let i = 0; i < allTutorials.length; i++) {
-      if (dto.title == allTutorials[i].title || dto.link == allTutorials[i].link) {
+      if (
+        dto.title == allTutorials[i].title ||
+        dto.link == allTutorials[i].link
+      ) {
         flag = false;
       }
     }
-    if (flag){
+    if (flag) {
       const fileName = await this.fileService.createFile(image);
       const newTutorial = await this.prisma.tutorial.create({
-        data: { ...dto, image: fileName },
+        data: { ...dto, image: `http://localhost:7000/${fileName}` },
       });
       return newTutorial;
-    }else{
+    } else {
       throw new HttpException(
-          'Такой заголовок или ссылка уже есть',
-          HttpStatus.INTERNAL_SERVER_ERROR,
+        'Такой заголовок или ссылка уже есть',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
@@ -36,7 +39,7 @@ export class TutorialService {
     const user = await this.prisma.user.findUnique({
       where: { id: Number(userID) },
     });
-    this.checkUser(user)
+    this.checkUser(user);
     user.tutorials.push(tutorialID);
     return user;
   }
@@ -45,15 +48,22 @@ export class TutorialService {
     const user = await this.prisma.user.findUnique({
       where: { id: Number(userID) },
     });
-    this.checkUser(user)
+    this.checkUser(user);
     delete user.tutorials[tutorialID];
     return user;
   }
 
-  checkUser(user){
-    if (!user) {throw new HttpException(
+  async showAllTutorials() {
+    const allTutorials = await this.prisma.tutorial.findMany();
+    return allTutorials;
+  }
+
+  checkUser(user) {
+    if (!user) {
+      throw new HttpException(
         'Такого юзера нет',
         HttpStatus.INTERNAL_SERVER_ERROR,
-    );}
+      );
+    }
   }
 }

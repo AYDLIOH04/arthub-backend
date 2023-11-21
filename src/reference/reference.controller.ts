@@ -3,7 +3,9 @@ import {
   Controller,
   Get,
   Param,
-  Post, Put, Query,
+  Post,
+  Put,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -54,13 +56,13 @@ export class ReferenceController {
 
   @Public()
   @Get('filt_name')
-  sortByName(@Query('name') name: string){
-    return this.referenceService.sortByName(name)
+  sortByName(@Query('name') name: string) {
+    return this.referenceService.sortByName(name);
   }
 
   @Public()
   @Get('filt_tag')
-  sortByHashtag(@Query('tag') tag: string){
-    return this.referenceService.sortByHashtag(tag)
+  sortByHashtag(@Query('tag') tag: string) {
+    return this.referenceService.sortByHashtag(tag);
   }
 }

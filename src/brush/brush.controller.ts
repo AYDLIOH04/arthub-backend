@@ -4,14 +4,15 @@ import {
   Get,
   Param,
   Post,
-  Put, Query,
+  Put,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { Public } from '../common/decorators';
 import { BrushService } from './brush.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {BrushDto} from "./dto/brush.dto";
+import { BrushDto } from './dto/brush.dto';
 
 @Controller('brush')
 export class BrushController {
@@ -55,7 +56,7 @@ export class BrushController {
 
   @Public()
   @Get('filt')
-  sortByProgram(@Query('program') program: string){
-    return this.brushService.sortByProgramm(program)
+  sortByProgram(@Query('program') program: string) {
+    return this.brushService.sortByProgramm(program);
   }
 }

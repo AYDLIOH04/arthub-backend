@@ -39,4 +39,10 @@ export class TutorialController {
   ) {
     return this.tutorialService.removeFromUser(tutorialID, userID);
   }
+
+  @Public()
+  @Get()
+  showAllPrograms() {
+    return this.tutorialService.showAllTutorials();
+  }
 }
