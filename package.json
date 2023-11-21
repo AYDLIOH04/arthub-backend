@@ -40,6 +40,8 @@
     "prisma": "^5.4.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -50,6 +52,7 @@
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.12",
+    "@types/swagger-ui-express": "^4.1.6",
     "@typescript-eslint/eslint-plugin": "^5.59.11",
     "@typescript-eslint/parser": "^5.59.11",
     "eslint": "^8.42.0",

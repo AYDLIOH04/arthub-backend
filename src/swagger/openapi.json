@@ -1,0 +1,45 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "test Arthub API",
+    "version": "v2"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:7000"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Получить всех юзеров",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "simple parameter",
+            "schema": {
+              "type": "string",
+              "example": "1"
+            }
+          }
+        ],
+        "description": "parameter id just for test",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "document": {
+                "schema": {
+                  "type": "string",
+                  "example": "some text"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
