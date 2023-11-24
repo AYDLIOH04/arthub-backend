@@ -66,14 +66,13 @@ export class TutorialService {
     return user;
   }
 
-  async showAllTutorials(response, page, size) {
+  async showAllTutorials(page, size) {
     const allTutorials = await this.prisma.tutorial.findMany();
-    response.setHeader('X-Total-Count', `${allTutorials.length}`);
     const cutAllTutorials = await this.prisma.tutorial.findMany({
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return cutAllTutorials;
+    return { ...cutAllTutorials, totalCount: allTutorials.length };
   }
 
   async showTutorialByID(tutorialID) {
@@ -87,7 +86,7 @@ export class TutorialService {
     }
   }
 
-  async sortByProgram(program, response, page, size) {
+  async sortByProgram(program, page, size) {
     const allPrograms = await this.prisma.tutorial.findMany({
       where: { program: program },
     });
@@ -97,14 +96,13 @@ export class TutorialService {
         HttpStatus.NOT_FOUND,
       );
     }
-    response.setHeader('X-Total-Count', `${allPrograms.length}`);
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedTutorials = allPrograms.slice(startIndex, endIndex);
-    return paginatedTutorials;
+    return { ...paginatedTutorials, totalCount: allPrograms.length };
   }
 
-  async sortByName(text, response, page, size) {
+  async sortByName(text, page, size) {
     text = text.split(' ');
     const needCount = text.length;
     const allTutorials = await this.prisma.tutorial.findMany();
@@ -123,11 +121,10 @@ export class TutorialService {
     if (filteredTutorials.length === 0) {
       throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
     } else {
-      response.setHeader('X-Total-Count', `${filteredTutorials.length}`);
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedTutorials = allTutorials.slice(startIndex, endIndex);
-      return paginatedTutorials;
+      return { ...paginatedTutorials, totalCount: allTutorials.length };
     }
   }
 

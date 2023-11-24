@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Query,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,7 +14,6 @@ import { GetCurrentUserId, Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TutorialDto } from './dto/tutorial.dto';
 import { TutorialService } from './tutorial.service';
-import { Response } from 'express';
 
 @Controller('tutorials')
 export class TutorialController {
@@ -51,33 +49,15 @@ export class TutorialController {
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
-    @Res() response: Response,
   ) {
     if (program && page && size) {
-      const sortedByProgram = await this.tutorialService.sortByProgram(
-        program,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByProgram);
+      return await this.tutorialService.sortByProgram(program, page, size);
     }
     if (search && page && size) {
-      const sortedByName = await this.tutorialService.sortByName(
-        search,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByName);
+      return await this.tutorialService.sortByName(search, page, size);
     }
     if (page && size) {
-      const allTutorials = await this.tutorialService.showAllTutorials(
-        response,
-        page,
-        size,
-      );
-      return response.json(allTutorials);
+      return await this.tutorialService.showAllTutorials(page, size);
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }

@@ -6,9 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
-  Put,
   Query,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -16,7 +14,6 @@ import { GetCurrentUserId, Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ReferenceService } from './reference.service';
 import { ReferenceDto } from './dto/reference.dto';
-import { Response } from 'express';
 
 @Controller('references')
 export class ReferenceController {
@@ -58,33 +55,15 @@ export class ReferenceController {
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
-    @Res() response: Response,
   ) {
     if (tag && page && size) {
-      const sortedByProgram = await this.referenceService.sortByHashtag(
-        tag,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByProgram);
+      return await this.referenceService.sortByHashtag(tag, page, size);
     }
     if (search && page && size) {
-      const sortedByName = await this.referenceService.sortByName(
-        search,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByName);
+      return await this.referenceService.sortByName(search, page, size);
     }
     if (page && size) {
-      const allBrushes = await this.referenceService.showAllReferences(
-        response,
-        page,
-        size,
-      );
-      return response.json(allBrushes);
+      return await this.referenceService.showAllReferences(page, size);
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }

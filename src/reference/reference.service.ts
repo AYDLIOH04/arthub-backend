@@ -91,17 +91,16 @@ export class ReferenceService {
     return imagesList;
   }
 
-  async showAllReferences(response, page, size) {
+  async showAllReferences(page, size) {
     const allReferences = await this.prisma.reference.findMany();
-    response.setHeader('X-Total-Count', `${allReferences.length}`);
     const cutAllReferences = await this.prisma.reference.findMany({
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return cutAllReferences;
+    return { ...cutAllReferences, totalCount: allReferences.length };
   }
 
-  async sortByName(text, response, page, size) {
+  async sortByName(text, page, size) {
     text = text.split(' ');
     const needCount = text.length;
     const allReferences = await this.prisma.reference.findMany();
@@ -120,18 +119,17 @@ export class ReferenceService {
     if (filteredReferences.length === 0) {
       throw new HttpException('Заголовок не найден', HttpStatus.NOT_FOUND);
     } else {
-      response.setHeader('X-Total-Count', `${filteredReferences.length}`);
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedReferences = filteredReferences.slice(
         startIndex,
         endIndex,
       );
-      return paginatedReferences;
+      return { ...paginatedReferences, totalCount: allReferences.length };
     }
   }
 
-  async sortByHashtag(hashtags, response, page, size) {
+  async sortByHashtag(hashtags, page, size) {
     hashtags = hashtags.split(' ');
     const needCount = hashtags.length;
     const allReferences = await this.prisma.reference.findMany();
@@ -150,14 +148,13 @@ export class ReferenceService {
     if (filteredReferences.length === 0) {
       throw new HttpException('Хэштэг не найден', HttpStatus.NOT_FOUND);
     } else {
-      response.setHeader('X-Total-Count', `${filteredReferences.length}`);
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedReferences = filteredReferences.slice(
         startIndex,
         endIndex,
       );
-      return paginatedReferences;
+      return { ...paginatedReferences, totalCount: allReferences.length };
     }
   }
 

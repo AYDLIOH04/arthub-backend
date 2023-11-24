@@ -71,7 +71,7 @@ export class BrushService {
     return user;
   }
 
-  async showAllLikedBrushes(response, page, size, userId) {
+  async showAllLikedBrushes(page, size, userId) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -80,7 +80,6 @@ export class BrushService {
     this.checkUser(user);
     const userBrushes = user.brushes;
     const allBrushes = await this.prisma.brush.findMany();
-    response.setHeader('X-Total-Count', `${allBrushes.length}`);
     const cutAllBrushes = await this.prisma.brush.findMany({
       skip: (page - 1) * size,
       take: Number(size),
@@ -95,17 +94,16 @@ export class BrushService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-    return paginatedBrushes;
+    return { ...paginatedBrushes, totalCount: allBrushes.length };
   }
 
-  async showAllBrushes(response, page, size) {
+  async showAllBrushes(page, size) {
     const allBrushes = await this.prisma.brush.findMany();
-    response.setHeader('X-Total-Count', `${allBrushes.length}`);
     const cutAllBrushes = await this.prisma.brush.findMany({
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return cutAllBrushes;
+    return { ...cutAllBrushes, totalCount: allBrushes.length };
   }
 
   async showBrushByID(brushID) {
@@ -119,7 +117,7 @@ export class BrushService {
     }
   }
 
-  async sortByProgram(program, response, page, size) {
+  async sortByProgram(program, page, size) {
     const allBrushes = await this.prisma.brush.findMany({
       where: { program: program },
     });
@@ -129,14 +127,13 @@ export class BrushService {
         HttpStatus.NOT_FOUND,
       );
     }
-    response.setHeader('X-Total-Count', `${allBrushes.length}`);
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = allBrushes.slice(startIndex, endIndex);
-    return paginatedBrushes;
+    return { ...paginatedBrushes, totalCount: allBrushes.length };
   }
 
-  async sortByName(text, response, page, size) {
+  async sortByName(text, page, size) {
     text = text.split(' ');
     const needCount = text.length;
     const allBrushes = await this.prisma.brush.findMany();
@@ -158,7 +155,7 @@ export class BrushService {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return paginatedBrushes;
+      return { ...paginatedBrushes, totalCount: allBrushes.length };
     }
   }
 

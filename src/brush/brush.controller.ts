@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Query,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -15,7 +14,6 @@ import { GetCurrentUserId, Public } from '../common/decorators';
 import { BrushService } from './brush.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BrushDto } from './dto/brush.dto';
-import { Response } from 'express';
 
 @Controller('brushes')
 export class BrushController {
@@ -51,33 +49,15 @@ export class BrushController {
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
-    @Res() response: Response,
   ) {
     if (program && page && size) {
-      const sortedByProgram = await this.brushService.sortByProgram(
-        program,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByProgram);
+      return await this.brushService.sortByProgram(program, page, size);
     }
     if (search && page && size) {
-      const sortedByName = await this.brushService.sortByName(
-        search,
-        response,
-        page,
-        size,
-      );
-      return response.json(sortedByName);
+      return await this.brushService.sortByName(search, page, size);
     }
     if (page && size) {
-      const allBrushes = await this.brushService.showAllBrushes(
-        response,
-        page,
-        size,
-      );
-      return response.json(allBrushes);
+      return await this.brushService.showAllBrushes(page, size);
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }
@@ -90,16 +70,9 @@ export class BrushController {
     @Query('page') page: string,
     @Query('size') size: string,
     @GetCurrentUserId() userId: number,
-    @Res() response: Response,
   ) {
     if (page && size) {
-      const allBrushes = await this.brushService.showAllLikedBrushes(
-        response,
-        page,
-        size,
-        userId,
-      );
-      return response.json(allBrushes);
+      return await this.brushService.showAllLikedBrushes(page, size, userId);
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }
