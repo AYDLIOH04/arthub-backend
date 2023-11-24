@@ -8,7 +8,7 @@ export class BrushDto {
 
   description: any;
 
-  programm: any;
+  program: string;
 
   @Type(() => File)
   image: any;

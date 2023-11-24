@@ -11,17 +11,12 @@ export class TutorialService {
   ) {}
 
   async createTutorial(dto: TutorialDto, image: any) {
-    let allTutorials = await this.prisma.tutorial.findMany();
-    let flag = true;
-    for (let i = 0; i < allTutorials.length; i++) {
-      if (
-        dto.title == allTutorials[i].title ||
-        dto.link == allTutorials[i].link
-      ) {
-        flag = false;
-      }
-    }
-    if (flag) {
+    const allTutorials = await this.prisma.tutorial.findMany();
+    const hasDuplicate = allTutorials.some(
+      (tutorial) => tutorial.title === dto.title || tutorial.link === dto.link,
+    );
+
+    if (!hasDuplicate) {
       const fileName = await this.fileService.createFile(image);
       const newTutorial = await this.prisma.tutorial.create({
         data: { ...dto, image: `http://localhost:7000/${fileName}` },
@@ -29,19 +24,37 @@ export class TutorialService {
       return newTutorial;
     } else {
       throw new HttpException(
-        'Такой заголовок или ссылка уже есть',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Уже существует туториал с таким названием или ссылкой',
+        HttpStatus.FORBIDDEN,
       );
     }
   }
 
   async addToUser(tutorialID, userID) {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
     });
     this.checkUser(user);
-    user.tutorials.push(tutorialID);
-    return user;
+    if (!user.tutorials.includes(Number(tutorialID))) {
+      const allTutorials = await this.prisma.tutorial.findMany();
+      for (const tutorial of allTutorials) {
+        if (Number(tutorialID) == Number(tutorial.id)) {
+          await this.prisma.user.update({
+            data: { tutorials: { push: Number(tutorialID) } },
+            where: { id: Number(userID) },
+          });
+          return user;
+        }
+      }
+      throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      throw new HttpException('Программа уже добавлена', HttpStatus.FORBIDDEN);
+    }
   }
 
   async removeFromUser(tutorialID, userID) {
@@ -53,17 +66,74 @@ export class TutorialService {
     return user;
   }
 
-  async showAllTutorials() {
+  async showAllTutorials(response, page, size) {
     const allTutorials = await this.prisma.tutorial.findMany();
-    return allTutorials;
+    response.setHeader('X-Total-Count', `${allTutorials.length}`);
+    const cutAllTutorials = await this.prisma.tutorial.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    return cutAllTutorials;
+  }
+
+  async showTutorialByID(tutorialID) {
+    const tutorial = await this.prisma.tutorial.findUnique({
+      where: { id: parseInt(tutorialID) },
+    });
+    if (tutorial) {
+      return tutorial;
+    } else {
+      throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async sortByProgram(program, response, page, size) {
+    const allPrograms = await this.prisma.tutorial.findMany({
+      where: { program: program },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException(
+        'Туториал с такой программой не найден',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    response.setHeader('X-Total-Count', `${allPrograms.length}`);
+    const startIndex = (page - 1) * size;
+    const endIndex = page * size;
+    const paginatedTutorials = allPrograms.slice(startIndex, endIndex);
+    return paginatedTutorials;
+  }
+
+  async sortByName(text, response, page, size) {
+    text = text.split(' ');
+    const needCount = text.length;
+    const allTutorials = await this.prisma.tutorial.findMany();
+    const filteredTutorials = [];
+    for (const tutorial of allTutorials) {
+      let count = 0;
+      for (const word of text) {
+        if (tutorial && tutorial.title.includes(word)) {
+          count += 1;
+          if (count == needCount) {
+            filteredTutorials.push(tutorial);
+          }
+        }
+      }
+    }
+    if (filteredTutorials.length === 0) {
+      throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
+    } else {
+      response.setHeader('X-Total-Count', `${filteredTutorials.length}`);
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedTutorials = allTutorials.slice(startIndex, endIndex);
+      return paginatedTutorials;
+    }
   }
 
   checkUser(user) {
     if (!user) {
-      throw new HttpException(
-        'Такого юзера нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
 }

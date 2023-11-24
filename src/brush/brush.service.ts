@@ -12,13 +12,10 @@ export class BrushService {
 
   async createBrush(dto: BrushDto, image: any) {
     const allBrushes = await this.prisma.brush.findMany();
-    let flag = true;
-    for (let i = 0; i < allBrushes.length; i++) {
-      if (dto.title == allBrushes[i].title || dto.link == allBrushes[i].link) {
-        flag = false;
-      }
-    }
-    if (flag) {
+    const hasDuplicate = allBrushes.some(
+      (brush) => brush.title === dto.title || brush.link === dto.link,
+    );
+    if (!hasDuplicate) {
       const fileName = await this.fileService.createFile(image);
       const newBrush = await this.prisma.brush.create({
         data: { ...dto, image: `http://localhost:7000/${fileName}` },
@@ -26,20 +23,25 @@ export class BrushService {
       return newBrush;
     } else {
       throw new HttpException(
-        'Такой заголовок или ссылка уже есть',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Уже существует кисть с таким заголовком или ссылкой',
+        HttpStatus.FORBIDDEN,
       );
     }
   }
 
   async addToUser(brushID, userID) {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
     });
     this.checkUser(user);
     if (!user.brushes.includes(Number(brushID))) {
       const allBrushes = await this.prisma.brush.findMany();
-      for (let brush of allBrushes) {
+      for (const brush of allBrushes) {
         if (Number(brushID) == Number(brush.id)) {
           await this.prisma.user.update({
             data: { brushes: { push: Number(brushID) } },
@@ -48,15 +50,9 @@ export class BrushService {
           return user;
         }
       }
-      throw new HttpException(
-        'Такой кисти нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException(
-        'Такой уже есть',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Кисть уже добавлена', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -75,60 +71,100 @@ export class BrushService {
     return user;
   }
 
-  async showUserBrushes(userID) {
+  async showAllLikedBrushes(response, page, size, userId) {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
+      where: {
+        id: userId,
+      },
     });
     this.checkUser(user);
+    const userBrushes = user.brushes;
     const allBrushes = await this.prisma.brush.findMany();
-    let brushList = [];
-    user.brushes.forEach(function (brushID) {
-      const brush = allBrushes.find((b) => b.id === brushID);
-      if (brush) {
-        brushList.push(brush);
-      }
+    response.setHeader('X-Total-Count', `${allBrushes.length}`);
+    const cutAllBrushes = await this.prisma.brush.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
     });
-    return brushList;
+    const updatedBrushes = cutAllBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      return { ...brush, favorite: isFavorite };
+    });
+
+    const startIndex = (page - 1) * size;
+    const endIndex = page * size;
+    const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
+    return paginatedBrushes;
   }
 
-  async showAllBrushes() {
+  async showAllBrushes(response, page, size) {
     const allBrushes = await this.prisma.brush.findMany();
-    return allBrushes;
+    response.setHeader('X-Total-Count', `${allBrushes.length}`);
+    const cutAllBrushes = await this.prisma.brush.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    return cutAllBrushes;
   }
 
-  async sortByProgramm(program) {
-    const allPrograms = await this.prisma.programm.findMany();
-    const flag = allPrograms.find((x) => x.name === program);
-    if (flag) {
-      const allBrushes = await this.prisma.brush.findMany();
-      let filteredBrushes = [];
-      for (let brush of allBrushes) {
-        if (brush.programm == program) {
-          filteredBrushes.push(brush);
+  async showBrushByID(brushID) {
+    const brush = await this.prisma.brush.findUnique({
+      where: { id: parseInt(brushID) },
+    });
+    if (brush) {
+      return brush;
+    } else {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async sortByProgram(program, response, page, size) {
+    const allBrushes = await this.prisma.brush.findMany({
+      where: { program: program },
+    });
+    if (allBrushes.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    response.setHeader('X-Total-Count', `${allBrushes.length}`);
+    const startIndex = (page - 1) * size;
+    const endIndex = page * size;
+    const paginatedBrushes = allBrushes.slice(startIndex, endIndex);
+    return paginatedBrushes;
+  }
+
+  async sortByName(text, response, page, size) {
+    text = text.split(' ');
+    const needCount = text.length;
+    const allBrushes = await this.prisma.brush.findMany();
+    const filteredBrushes = [];
+    for (const brush of allBrushes) {
+      let count = 0;
+      for (const word of text) {
+        if (brush && brush.title.includes(word)) {
+          count += 1;
+          if (count == needCount) {
+            filteredBrushes.push(brush);
+          }
         }
       }
-      if (filteredBrushes.length === 0) {
-        throw new HttpException(
-          'Нет таких программ',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      } else {
-        return filteredBrushes;
-      }
+    }
+    if (filteredBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException(
-        'Такой программы нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
+      return paginatedBrushes;
     }
   }
 
   checkUser(user) {
     if (!user) {
-      throw new HttpException(
-        'Такого юзера нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
 }

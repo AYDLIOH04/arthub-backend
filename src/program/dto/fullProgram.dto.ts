@@ -1,7 +1,6 @@
-import { IsInt, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class ProgramDto {
+export class ProgramFullDto {
   name: any;
 
   link: any;
@@ -12,4 +11,11 @@ export class ProgramDto {
 
   @Type(() => File)
   logo: any;
+
+  pluses: any;
+
+  minuses: any;
+
+  @Type(() => File)
+  examples: any;
 }

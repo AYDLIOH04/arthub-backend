@@ -12,11 +12,11 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { ReferenceModule } from './reference/reference.module';
 import { TutorialModule } from './tutorial/tutorial.module';
 import { TutorialController } from './tutorial/tutorial.controller';
-import { ProgrammModule } from './programm/programm.module';
-import { ProgrammController } from './programm/programm.controller';
+import { ProgramModule } from './program/program.module';
+import { ProgramController } from './program/program.controller';
 import * as path from 'path';
 import { TutorialService } from './tutorial/tutorial.service';
-import { ProgrammService } from './programm/programm.service';
+import { ProgramService } from './program/program.service';
 import { ReferenceService } from './reference/reference.service';
 
 @Module({
@@ -31,7 +31,7 @@ import { ReferenceService } from './reference/reference.service';
       rootPath: path.resolve(__dirname, 'static'),
     }),
     ReferenceModule,
-    ProgrammModule,
+    ProgramModule,
     TutorialModule,
   ],
   providers: [
@@ -39,11 +39,11 @@ import { ReferenceService } from './reference/reference.service';
       provide: APP_GUARD,
       useClass: AccessTokenGuard,
     },
-    ProgrammService,
+    ProgramService,
     BrushService,
     TutorialService,
     ReferenceService,
   ],
-  controllers: [BrushController, TutorialController, ProgrammController],
+  controllers: [BrushController, TutorialController, ProgramController],
 })
 export class AppModule {}

@@ -1,6 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UserDto } from './dto/User.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,15 +10,20 @@ export class UsersService {
   }
 
   async getUser(userId) {
-    let user = await this.prisma.user.findUnique({
-      where: { id: parseInt(userId) },
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+        refreshToken: {
+          not: null,
+        },
+      },
     });
     this.checkUser(user);
     return user;
   }
 
   async deleteUser(userId) {
-    let user = await this.prisma.user.delete({
+    const user = await this.prisma.user.delete({
       where: { id: parseInt(userId) },
     });
     this.checkUser(user);
@@ -27,40 +31,37 @@ export class UsersService {
   }
 
   async sortBrushByProgramm(program, userID) {
-    const allPrograms = await this.prisma.programm.findMany();
-    const flag = allPrograms.find((x) => x.name === program);
-    if (flag) {
-      const user = await this.prisma.user.findUnique({
-        where: { id: Number(userID) },
-      });
-      this.checkUser(user);
-      let filteredBrushes = [];
-      let userBrushes = [];
-      for (let id of user.brushes) {
-        userBrushes.push(
-          await this.prisma.brush.findUnique({ where: { id: id } }),
-        );
-      }
-      for (let brush of userBrushes) {
-        if (brush) {
-          if (brush.programm == program) {
-            filteredBrushes.push(brush);
-          }
+    const allPrograms = await this.prisma.program.findMany({
+      where: { name: program },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
+    }
+    const user = await this.prisma.user.findUnique({
+      where: { id: Number(userID) },
+    });
+    this.checkUser(user);
+    const filteredBrushes = [];
+    const userBrushes = [];
+    for (const id of user.brushes) {
+      userBrushes.push(
+        await this.prisma.brush.findUnique({ where: { id: id } }),
+      );
+    }
+    for (const brush of userBrushes) {
+      if (brush) {
+        if (brush.programm == program) {
+          filteredBrushes.push(brush);
         }
       }
-      if (filteredBrushes.length === 0) {
-        throw new HttpException(
-          'Нет таких программ',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      } else {
-        return filteredBrushes;
-      }
-    } else {
+    }
+    if (filteredBrushes.length === 0) {
       throw new HttpException(
-        'Такой программы нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Нет кистей с такой программой',
+        HttpStatus.NOT_FOUND,
       );
+    } else {
+      return filteredBrushes;
     }
   }
 
@@ -70,18 +71,18 @@ export class UsersService {
     });
     this.checkUser(user);
 
-    let userReferences = [];
-    for (let id of user.references) {
+    const userReferences = [];
+    for (const id of user.references) {
       userReferences.push(
         await this.prisma.reference.findUnique({ where: { id: id } }),
       );
     }
 
-    let filteredReferences = [];
-    for (let reference of userReferences) {
+    const filteredReferences = [];
+    for (const reference of userReferences) {
       if (reference) {
-        let text = reference.hashtag.split('#');
-        for (let word of text) {
+        const text = reference.hashtag.split('#');
+        for (const word of text) {
           if (word.trim() == hashtag) {
             filteredReferences.push(reference);
           }
@@ -90,8 +91,8 @@ export class UsersService {
     }
     if (filteredReferences.length === 0) {
       throw new HttpException(
-        'Нет таких хэштэгов',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'У референсов не таких хэштэгов',
+        HttpStatus.NOT_FOUND,
       );
     } else {
       return filteredReferences;
@@ -100,22 +101,22 @@ export class UsersService {
 
   async sortReferenceByTitle(text, userID) {
     text = text.split(' ');
-    let needCount = text.length;
+    const needCount = text.length;
     const user = await this.prisma.user.findUnique({
       where: { id: Number(userID) },
     });
     this.checkUser(user);
 
-    let userReferences = [];
-    for (let id of user.references) {
+    const userReferences = [];
+    for (const id of user.references) {
       userReferences.push(
         await this.prisma.reference.findUnique({ where: { id: id } }),
       );
     }
-    let filteredReferences = [];
-    for (let reference of userReferences) {
+    const filteredReferences = [];
+    for (const reference of userReferences) {
       let count = 0;
-      for (let word of text) {
+      for (const word of text) {
         if (reference && reference.title.includes(word)) {
           count += 1;
           if (count == needCount) {
@@ -126,20 +127,85 @@ export class UsersService {
     }
     if (filteredReferences.length === 0) {
       throw new HttpException(
-        'Нет таких названий референсов',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Референс с таким названием не найден',
+        HttpStatus.NOT_FOUND,
       );
     } else {
       return filteredReferences;
     }
   }
 
+  async getUsersBrushes(userID) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
+    });
+    this.checkUser(user);
+
+    const brushList = await this.prisma.brush.findMany({
+      where: { id: { in: user.brushes } },
+    });
+    return brushList;
+  }
+
+  async getUsersReferences(userID) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
+    });
+    this.checkUser(user);
+
+    const referenceList = await this.prisma.reference.findMany({
+      where: { id: { in: user.references } },
+    });
+    return referenceList;
+  }
+
+  async getUsersTutorials(userID) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
+    });
+    this.checkUser(user);
+
+    const tutorialList = await this.prisma.tutorial.findMany({
+      where: { id: { in: user.tutorials } },
+    });
+    return tutorialList;
+  }
+
+  async getUsersPrograms(userID) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
+    });
+    this.checkUser(user);
+
+    const programList = await this.prisma.program.findMany({
+      where: { id: { in: user.programs } },
+    });
+    return programList;
+  }
+
   checkUser(user) {
     if (!user) {
-      throw new HttpException(
-        'Такого юзера нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
 }

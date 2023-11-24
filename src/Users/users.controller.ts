@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Public } from '../common/decorators';
+import { GetCurrentUserId, Public } from '../common/decorators';
 
 @Controller('users')
 export class UsersController {
@@ -38,9 +38,8 @@ export class UsersController {
     return this.userService.sortBrushByProgramm(program, userID);
   }
 
-  @Public()
-  @Get(':userId')
-  getUser(@Param('userId') userId: string) {
+  @Get('/info')
+  getUser(@GetCurrentUserId() userId: number) {
     return this.userService.getUser(userId);
   }
 
@@ -48,5 +47,25 @@ export class UsersController {
   @Get('delete/:userId')
   deleteUser(@Param('userId') userId: string) {
     return this.userService.deleteUser(userId);
+  }
+
+  @Get('/brushes')
+  getUsersBrushes(@GetCurrentUserId() userId: number) {
+    return this.userService.getUsersBrushes(userId);
+  }
+
+  @Get('/references')
+  getUsersReferences(@GetCurrentUserId() userId: number) {
+    return this.userService.getUsersReferences(userId);
+  }
+
+  @Get('/tutorials')
+  getUsersTutorials(@GetCurrentUserId() userId: number) {
+    return this.userService.getUsersTutorials(userId);
+  }
+
+  @Get('/programs')
+  getUsersPrograms(@GetCurrentUserId() userId: number) {
+    return this.userService.getUsersPrograms(userId);
   }
 }

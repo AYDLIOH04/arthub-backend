@@ -8,6 +8,10 @@ export class TutorialDto {
 
   description: any;
 
+  program: any;
+
+  author: any;
+
   @Type(() => File)
   image: any;
 }

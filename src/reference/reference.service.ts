@@ -26,23 +26,25 @@ export class ReferenceService {
       return newReference;
     } else {
       throw new HttpException(
-        'Такой заголовок',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        'Уже существует референс с таким заголовком',
+        HttpStatus.NOT_MODIFIED,
       );
     }
   }
 
   async addToUser(referenceID, userID) {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
+      where: {
+        id: userID,
+        refreshToken: {
+          not: null,
+        },
+      },
     });
     this.checkUser(user);
-    if (
-      user.references.length === 0 ||
-      !user.references.includes(Number(referenceID))
-    ) {
+    if (!user.references.includes(Number(referenceID))) {
       const allReferences = await this.prisma.reference.findMany();
-      for (let reference of allReferences) {
+      for (const reference of allReferences) {
         if (Number(referenceID) == Number(reference.id)) {
           await this.prisma.user.update({
             data: { references: { push: Number(reference.id) } },
@@ -51,15 +53,9 @@ export class ReferenceService {
           return user;
         }
       }
-      throw new HttpException(
-        'Такого референса нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Референс не найден', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException(
-        'Такой уже есть',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Референс уже добавлен', HttpStatus.FORBIDDEN);
     }
   }
 
@@ -85,7 +81,7 @@ export class ReferenceService {
     this.checkUser(user);
 
     const allReferences = await this.prisma.reference.findMany();
-    let imagesList = [];
+    const imagesList = [];
     user.references.forEach(function (referenceID) {
       const reference = allReferences.find((b) => b.id === referenceID);
       if (reference) {
@@ -95,20 +91,24 @@ export class ReferenceService {
     return imagesList;
   }
 
-  async showAllReferences() {
+  async showAllReferences(response, page, size) {
     const allReferences = await this.prisma.reference.findMany();
-    return allReferences;
+    response.setHeader('X-Total-Count', `${allReferences.length}`);
+    const cutAllReferences = await this.prisma.reference.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    return cutAllReferences;
   }
 
-  async sortByName(text) {
+  async sortByName(text, response, page, size) {
     text = text.split(' ');
-    let needCount = text.length;
-    let allReferencses = await this.prisma.reference.findMany();
-
-    let filteredReferences = [];
-    for (let reference of allReferencses) {
+    const needCount = text.length;
+    const allReferences = await this.prisma.reference.findMany();
+    const filteredReferences = [];
+    for (const reference of allReferences) {
       let count = 0;
-      for (let word of text) {
+      for (const word of text) {
         if (reference && reference.title.includes(word)) {
           count += 1;
           if (count == needCount) {
@@ -118,44 +118,63 @@ export class ReferenceService {
       }
     }
     if (filteredReferences.length === 0) {
-      throw new HttpException(
-        'Нет таких программ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Заголовок не найден', HttpStatus.NOT_FOUND);
     } else {
-      return filteredReferences;
+      response.setHeader('X-Total-Count', `${filteredReferences.length}`);
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedReferences = filteredReferences.slice(
+        startIndex,
+        endIndex,
+      );
+      return paginatedReferences;
     }
   }
 
-  async sortByHashtag(hashtag) {
-    let allReferencses = await this.prisma.reference.findMany();
-    let filteredReferences = [];
-    for (let reference of allReferencses) {
-      if (reference) {
-        let text = reference.hashtag.split('#');
-        for (let word of text) {
-          if (word.trim() == hashtag) {
+  async sortByHashtag(hashtags, response, page, size) {
+    hashtags = hashtags.split(' ');
+    const needCount = hashtags.length;
+    const allReferences = await this.prisma.reference.findMany();
+    const filteredReferences = [];
+    for (const reference of allReferences) {
+      let count = 0;
+      for (const word of hashtags) {
+        if (reference && reference.hashtag.includes(word)) {
+          count += 1;
+          if (count == needCount) {
             filteredReferences.push(reference);
           }
         }
       }
     }
     if (filteredReferences.length === 0) {
-      throw new HttpException(
-        'Нет таких программ',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Хэштэг не найден', HttpStatus.NOT_FOUND);
     } else {
-      return filteredReferences;
+      response.setHeader('X-Total-Count', `${filteredReferences.length}`);
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedReferences = filteredReferences.slice(
+        startIndex,
+        endIndex,
+      );
+      return paginatedReferences;
+    }
+  }
+
+  async showReferenceByID(referenceID) {
+    const reference = await this.prisma.reference.findUnique({
+      where: { id: parseInt(referenceID) },
+    });
+    if (reference) {
+      return reference;
+    } else {
+      throw new HttpException('Референс не найден', HttpStatus.NOT_FOUND);
     }
   }
 
   checkUser(user) {
     if (!user) {
-      throw new HttpException(
-        'Такого юзера нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
 }

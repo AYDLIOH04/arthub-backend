@@ -2,19 +2,22 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Post,
-  Put,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { Public } from '../common/decorators';
+import { GetCurrentUserId, Public } from '../common/decorators';
 import { BrushService } from './brush.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BrushDto } from './dto/brush.dto';
+import { Response } from 'express';
 
-@Controller('brush')
+@Controller('brushes')
 export class BrushController {
   constructor(private brushService: BrushService) {}
   @Public()
@@ -24,13 +27,12 @@ export class BrushController {
     return this.brushService.createBrush(dto, image);
   }
 
-  @Public()
-  @Put('add/:brushID/:userID')
+  @Post(':brushID/add-favorite')
   addToUser(
     @Param('brushID') brushID: string,
-    @Param('userID') userID: string,
+    @GetCurrentUserId() userId: number,
   ) {
-    return this.brushService.addToUser(brushID, userID);
+    return this.brushService.addToUser(brushID, userId);
   }
 
   @Public()
@@ -43,20 +45,69 @@ export class BrushController {
   }
 
   @Public()
-  @Post('user/:userID')
-  showUserBrushes(@Param('userID') userID: string) {
-    return this.brushService.showUserBrushes(userID);
-  }
-
-  @Public()
   @Get()
-  showAllBrushes() {
-    return this.brushService.showAllBrushes();
+  async showFlitBrushes(
+    @Query('program') program: string,
+    @Query('search') search: string,
+    @Query('page') page: string,
+    @Query('size') size: string,
+    @Res() response: Response,
+  ) {
+    if (program && page && size) {
+      const sortedByProgram = await this.brushService.sortByProgram(
+        program,
+        response,
+        page,
+        size,
+      );
+      return response.json(sortedByProgram);
+    }
+    if (search && page && size) {
+      const sortedByName = await this.brushService.sortByName(
+        search,
+        response,
+        page,
+        size,
+      );
+      return response.json(sortedByName);
+    }
+    if (page && size) {
+      const allBrushes = await this.brushService.showAllBrushes(
+        response,
+        page,
+        size,
+      );
+      return response.json(allBrushes);
+    } else {
+      throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get('/all')
+  async showAllBrushes(
+    @Query('program') program: string,
+    @Query('search') search: string,
+    @Query('page') page: string,
+    @Query('size') size: string,
+    @GetCurrentUserId() userId: number,
+    @Res() response: Response,
+  ) {
+    if (page && size) {
+      const allBrushes = await this.brushService.showAllLikedBrushes(
+        response,
+        page,
+        size,
+        userId,
+      );
+      return response.json(allBrushes);
+    } else {
+      throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
+    }
   }
 
   @Public()
-  @Get('filt')
-  sortByProgram(@Query('program') program: string) {
-    return this.brushService.sortByProgramm(program);
+  @Get('/:brushID')
+  showBrushByID(@Param('brushID') brushID: string) {
+    return this.brushService.showBrushByID(brushID);
   }
 }

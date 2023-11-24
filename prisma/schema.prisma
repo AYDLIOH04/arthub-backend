@@ -24,7 +24,7 @@ model User {
   brushes    Int[] @unique
   references Int[] @unique
   tutorials  Int[] @unique
-  programm   Int[] @unique
+  programs   Int[] @unique
 
   @@map("users")
 }
@@ -37,7 +37,7 @@ model Brush {
   title       String @unique
   link        String
   description String
-  programm    String
+  program     String
   image       String
 
   @@map("brushes")
@@ -63,20 +63,26 @@ model Tutorial {
   title       String @unique
   link        String
   description String
+  program     String
+  author      String
   image       String
 
   @@map("tutorials")
 }
 
-model Programm {
+model Program {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   name        String @unique
   link        String
+  systems     String
   description String
   logo        String
+  pluses      String
+  minuses     String
+  examples    String
 
-  @@map("programms")
+  @@map("programs")
 }
