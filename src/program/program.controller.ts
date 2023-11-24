@@ -9,12 +9,12 @@ import {
 } from '@nestjs/common';
 import { Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ProgrammService } from './programm.service';
-import { ProgramDto } from './dto/programm.dto';
+import { ProgramService } from './program.service';
+import { ProgramDto } from './dto/program.dto';
 
 @Controller('program')
-export class ProgrammController {
-  constructor(private programmService: ProgrammService) {}
+export class ProgramController {
+  constructor(private programmService: ProgramService) {}
   @Public()
   @UseInterceptors(FileInterceptor('logo'))
   @Post('create')

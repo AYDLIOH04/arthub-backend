@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
-import { ProgramDto } from './dto/programm.dto';
+import { ProgramDto } from './dto/program.dto';
 
 @Injectable()
-export class ProgrammService {
+export class ProgramService {
   constructor(
     private prisma: PrismaService,
     private fileService: FilesService,
@@ -12,14 +12,10 @@ export class ProgrammService {
 
   async createProgramm(dto: ProgramDto, logo: any) {
     const allPrograms = await this.prisma.programm.findMany();
-    let flag = true;
-
-    for (let i = 0; i < allPrograms.length; i++) {
-      if (dto.name == allPrograms[i].name || dto.link == allPrograms[i].link) {
-        flag = false;
-      }
-    }
-    if (flag) {
+    const hasDuplicate = allPrograms.some(
+        program => program.name === dto.name || program.link === dto.link
+    );
+    if (!hasDuplicate) {
       const fileName = await this.fileService.createFile(logo);
       const newProgram = await this.prisma.programm.create({
         data: { ...dto, logo: `http://localhost:7000/${fileName}` },
@@ -27,8 +23,8 @@ export class ProgrammService {
       return newProgram;
     } else {
       throw new HttpException(
-        'Такая программа или ссылка уже есть',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+          'Уже существует программа с таким названием или ссылкой',
+          HttpStatus.FORBIDDEN,
       );
     }
   }
@@ -59,8 +55,8 @@ export class ProgrammService {
   checkUser(user) {
     if (!user) {
       throw new HttpException(
-        'Такого юзера нет',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+          'Пользователь не найден',
+          HttpStatus.NOT_FOUND,
       );
     }
   }
