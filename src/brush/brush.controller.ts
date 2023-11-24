@@ -83,7 +83,7 @@ export class BrushController {
     }
   }
 
-  @Get('/all')
+  @Get('/like')
   async showAllBrushes(
     @Query('program') program: string,
     @Query('search') search: string,
