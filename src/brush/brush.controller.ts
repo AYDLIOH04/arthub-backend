@@ -50,6 +50,14 @@ export class BrushController {
     @Query('page') page: string,
     @Query('size') size: string,
   ) {
+    if (program && search && page && size) {
+      return await this.brushService.sortByNameAndProgram(
+        program,
+        search,
+        page,
+        size,
+      );
+    }
     if (program && page && size) {
       return await this.brushService.sortByProgram(program, page, size);
     }

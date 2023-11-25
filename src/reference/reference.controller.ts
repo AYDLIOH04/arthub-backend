@@ -56,6 +56,14 @@ export class ReferenceController {
     @Query('page') page: string,
     @Query('size') size: string,
   ) {
+    if (tag && search && page && size) {
+      return await this.referenceService.sortByHashtagAndName(
+        tag,
+        search,
+        page,
+        size,
+      );
+    }
     if (tag && page && size) {
       return await this.referenceService.sortByHashtag(tag, page, size);
     }

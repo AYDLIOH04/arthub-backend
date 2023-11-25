@@ -95,9 +95,9 @@ export class ProgramService {
 
   async showProgram(name) {
     const program = await this.prisma.program.findUnique({
-      where: { name: name },
+      where: { name: name[0].toUpperCase() + name.slice(1) },
     });
-    return program;
+    return this.toList(program);
   }
 
   async sortBySystem(name) {
@@ -126,7 +126,7 @@ export class ProgramService {
         id: program.id,
         name: program.name,
         link: program.link,
-        systems: program.systems,
+        systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
       };
@@ -138,5 +138,19 @@ export class ProgramService {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
+  }
+
+  toList(program) {
+    return {
+      id: program.id,
+      name: program.name,
+      link: program.link,
+      systems: program.systems.split(' '),
+      description: program.description,
+      pluses: program.pluses.split('###'),
+      minuses: program.pluses.split('###'),
+      examples: program.examples.split(' '),
+      logo: program.logo,
+    };
   }
 }

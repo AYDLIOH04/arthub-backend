@@ -159,6 +159,40 @@ export class BrushService {
     }
   }
 
+  async sortByNameAndProgram(program, text, page, size) {
+    const allBrushes = await this.prisma.brush.findMany({
+      where: { program: { contains: program, mode: 'insensitive' } },
+    });
+    if (allBrushes.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    text = text.split(' ');
+    const needCount = text.length;
+    const filteredBrushes = [];
+    for (const brush of allBrushes) {
+      let count = 0;
+      for (const word of text) {
+        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+          count += 1;
+          if (count == needCount) {
+            filteredBrushes.push(brush);
+          }
+        }
+      }
+    }
+    if (filteredBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
+      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+    }
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);

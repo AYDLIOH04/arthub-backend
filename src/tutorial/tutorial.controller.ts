@@ -50,6 +50,14 @@ export class TutorialController {
     @Query('page') page: string,
     @Query('size') size: string,
   ) {
+    if (program && search && page && size) {
+      return await this.tutorialService.sortByProgramAndName(
+        program,
+        search,
+        page,
+        size,
+      );
+    }
     if (program && page && size) {
       return await this.tutorialService.sortByProgram(program, page, size);
     }

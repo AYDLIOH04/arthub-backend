@@ -135,6 +135,58 @@ export class ReferenceService {
     }
   }
 
+  async sortByHashtagAndName(hashtags, text, page, size) {
+    hashtags = hashtags.split(' ');
+    const needCount = hashtags.length;
+    const allReferences = await this.prisma.reference.findMany();
+    const filteredReferences = [];
+    for (const reference of allReferences) {
+      let count = 0;
+      for (const word of hashtags) {
+        if (
+          reference &&
+          reference.hashtag.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredReferences.push(reference);
+          }
+        }
+      }
+    }
+    text = text.split(' ');
+    const needCount2 = text.length;
+    const filteredReferences2 = [];
+    for (const reference of filteredReferences) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          reference &&
+          reference.title.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount2) {
+            filteredReferences2.push(reference);
+          }
+        }
+      }
+    }
+    if (filteredReferences2.length === 0) {
+      throw new HttpException('Хэштэг не найден', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedReferences = filteredReferences2.slice(
+        startIndex,
+        endIndex,
+      );
+      return {
+        response: paginatedReferences,
+        totalCount: filteredReferences2.length,
+      };
+    }
+  }
+
   async sortByHashtag(hashtags, page, size) {
     hashtags = hashtags.split(' ');
     const needCount = hashtags.length;

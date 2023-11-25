@@ -134,6 +134,46 @@ export class TutorialService {
     }
   }
 
+  async sortByProgramAndName(program, text, page, size) {
+    const allPrograms = await this.prisma.tutorial.findMany({
+      where: { program: { contains: program, mode: 'insensitive' } },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException(
+        'Туториал с такой программой не найден',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    text = text.split(' ');
+    const needCount = text.length;
+    const filteredTutorials = [];
+    for (const tutorial of allPrograms) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          tutorial &&
+          tutorial.title.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredTutorials.push(tutorial);
+          }
+        }
+      }
+    }
+    if (filteredTutorials.length === 0) {
+      throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedTutorials = filteredTutorials.slice(startIndex, endIndex);
+      return {
+        response: paginatedTutorials,
+        totalCount: filteredTutorials.length,
+      };
+    }
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
