@@ -85,7 +85,7 @@ export class ProgramService {
         id: program.id,
         name: program.name,
         link: program.link,
-        systems: program.systems,
+        systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
       };
@@ -102,14 +102,19 @@ export class ProgramService {
 
   async sortBySystem(name) {
     const programs = await this.prisma.program.findMany({
-      where: { systems: { contains: name, mode: 'insensitive' } },
+      where: {
+        systems: {
+          contains: name[0].toUpperCase() + name.slice(1),
+          mode: 'insensitive',
+        },
+      },
     });
     const selectedPrograms = programs.map((program) => {
       return {
         id: program.id,
         name: program.name,
         link: program.link,
-        systems: program.systems,
+        systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
       };
