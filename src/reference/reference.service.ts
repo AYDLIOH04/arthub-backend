@@ -129,8 +129,8 @@ export class ReferenceService {
         endIndex,
       );
       return {
-        responce: paginatedReferences,
-        totalCount: allReferences.length,
+        response: paginatedReferences,
+        totalCount: filteredReferences.length,
       };
     }
   }
@@ -164,8 +164,8 @@ export class ReferenceService {
         endIndex,
       );
       return {
-        responce: paginatedReferences,
-        totalCount: allReferences.length,
+        response: paginatedReferences,
+        totalCount: filteredReferences.length,
       };
     }
   }

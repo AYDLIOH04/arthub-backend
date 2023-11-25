@@ -94,7 +94,7 @@ export class BrushService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-    return { responce: paginatedBrushes, totalCount: allBrushes.length };
+    return { response: paginatedBrushes, totalCount: updatedBrushes.length };
   }
 
   async showAllBrushes(page, size) {
@@ -103,7 +103,7 @@ export class BrushService {
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return { responce: cutAllBrushes, totalCount: allBrushes.length };
+    return { response: cutAllBrushes, totalCount: allBrushes.length };
   }
 
   async showBrushByID(brushID) {
@@ -130,7 +130,7 @@ export class BrushService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = allBrushes.slice(startIndex, endIndex);
-    return { responce: paginatedBrushes, totalCount: allBrushes.length };
+    return { response: paginatedBrushes, totalCount: allBrushes.length };
   }
 
   async sortByName(text, page, size) {
@@ -155,7 +155,7 @@ export class BrushService {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return { responce: paginatedBrushes, totalCount: allBrushes.length };
+      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
     }
   }
 

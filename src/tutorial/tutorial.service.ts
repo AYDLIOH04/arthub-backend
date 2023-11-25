@@ -72,7 +72,7 @@ export class TutorialService {
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return { responce: cutAllTutorials, totalCount: allTutorials.length };
+    return { response: cutAllTutorials, totalCount: allTutorials.length };
   }
 
   async showTutorialByID(tutorialID) {
@@ -99,7 +99,7 @@ export class TutorialService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedTutorials = allPrograms.slice(startIndex, endIndex);
-    return { responce: paginatedTutorials, totalCount: allPrograms.length };
+    return { response: paginatedTutorials, totalCount: allPrograms.length };
   }
 
   async sortByName(text, page, size) {
@@ -126,8 +126,11 @@ export class TutorialService {
     } else {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
-      const paginatedTutorials = allTutorials.slice(startIndex, endIndex);
-      return { responce: paginatedTutorials, totalCount: allTutorials.length };
+      const paginatedTutorials = filteredTutorials.slice(startIndex, endIndex);
+      return {
+        response: paginatedTutorials,
+        totalCount: filteredTutorials.length,
+      };
     }
   }
 
