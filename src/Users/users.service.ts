@@ -50,7 +50,7 @@ export class UsersService {
     }
     for (const brush of userBrushes) {
       if (brush) {
-        if (brush.programm == program) {
+        if (brush.programm.toLowerCase() == program.toLowerCase()) {
           filteredBrushes.push(brush);
         }
       }
@@ -117,7 +117,10 @@ export class UsersService {
     for (const reference of userReferences) {
       let count = 0;
       for (const word of text) {
-        if (reference && reference.title.includes(word)) {
+        if (
+          reference &&
+          reference.title.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
             filteredReferences.push(reference);

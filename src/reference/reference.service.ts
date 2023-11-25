@@ -97,7 +97,7 @@ export class ReferenceService {
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return { ...cutAllReferences, totalCount: allReferences.length };
+    return { response: cutAllReferences, totalCount: allReferences.length };
   }
 
   async sortByName(text, page, size) {
@@ -108,7 +108,10 @@ export class ReferenceService {
     for (const reference of allReferences) {
       let count = 0;
       for (const word of text) {
-        if (reference && reference.title.includes(word)) {
+        if (
+          reference &&
+          reference.title.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
             filteredReferences.push(reference);
@@ -125,7 +128,10 @@ export class ReferenceService {
         startIndex,
         endIndex,
       );
-      return { ...paginatedReferences, totalCount: allReferences.length };
+      return {
+        responce: paginatedReferences,
+        totalCount: allReferences.length,
+      };
     }
   }
 
@@ -137,7 +143,10 @@ export class ReferenceService {
     for (const reference of allReferences) {
       let count = 0;
       for (const word of hashtags) {
-        if (reference && reference.hashtag.includes(word)) {
+        if (
+          reference &&
+          reference.hashtag.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
             filteredReferences.push(reference);
@@ -154,7 +163,10 @@ export class ReferenceService {
         startIndex,
         endIndex,
       );
-      return { ...paginatedReferences, totalCount: allReferences.length };
+      return {
+        responce: paginatedReferences,
+        totalCount: allReferences.length,
+      };
     }
   }
 

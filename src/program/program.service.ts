@@ -102,7 +102,7 @@ export class ProgramService {
 
   async sortBySystem(name) {
     const programs = await this.prisma.program.findMany({
-      where: { systems: { contains: name } },
+      where: { systems: { contains: name, mode: 'insensitive' } },
     });
     const selectedPrograms = programs.map((program) => {
       return {
@@ -119,7 +119,7 @@ export class ProgramService {
 
   async sortByName(name) {
     const programs = await this.prisma.program.findMany({
-      where: { name: { contains: name } },
+      where: { name: { contains: name, mode: 'insensitive' } },
     });
     const selectedPrograms = programs.map((program) => {
       return {

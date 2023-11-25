@@ -94,7 +94,7 @@ export class BrushService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-    return { ...paginatedBrushes, totalCount: allBrushes.length };
+    return { responce: paginatedBrushes, totalCount: allBrushes.length };
   }
 
   async showAllBrushes(page, size) {
@@ -103,7 +103,7 @@ export class BrushService {
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return { ...cutAllBrushes, totalCount: allBrushes.length };
+    return { responce: cutAllBrushes, totalCount: allBrushes.length };
   }
 
   async showBrushByID(brushID) {
@@ -119,7 +119,7 @@ export class BrushService {
 
   async sortByProgram(program, page, size) {
     const allBrushes = await this.prisma.brush.findMany({
-      where: { program: program },
+      where: { program: { contains: program, mode: 'insensitive' } },
     });
     if (allBrushes.length === 0) {
       throw new HttpException(
@@ -130,7 +130,7 @@ export class BrushService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = allBrushes.slice(startIndex, endIndex);
-    return { ...paginatedBrushes, totalCount: allBrushes.length };
+    return { responce: paginatedBrushes, totalCount: allBrushes.length };
   }
 
   async sortByName(text, page, size) {
@@ -141,7 +141,7 @@ export class BrushService {
     for (const brush of allBrushes) {
       let count = 0;
       for (const word of text) {
-        if (brush && brush.title.includes(word)) {
+        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
           count += 1;
           if (count == needCount) {
             filteredBrushes.push(brush);
@@ -155,7 +155,7 @@ export class BrushService {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return { ...paginatedBrushes, totalCount: allBrushes.length };
+      return { responce: paginatedBrushes, totalCount: allBrushes.length };
     }
   }
 

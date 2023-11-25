@@ -72,7 +72,7 @@ export class TutorialService {
       skip: (page - 1) * size,
       take: Number(size),
     });
-    return { ...cutAllTutorials, totalCount: allTutorials.length };
+    return { responce: cutAllTutorials, totalCount: allTutorials.length };
   }
 
   async showTutorialByID(tutorialID) {
@@ -88,7 +88,7 @@ export class TutorialService {
 
   async sortByProgram(program, page, size) {
     const allPrograms = await this.prisma.tutorial.findMany({
-      where: { program: program },
+      where: { program: { contains: program, mode: 'insensitive' } },
     });
     if (allPrograms.length === 0) {
       throw new HttpException(
@@ -99,7 +99,7 @@ export class TutorialService {
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedTutorials = allPrograms.slice(startIndex, endIndex);
-    return { ...paginatedTutorials, totalCount: allPrograms.length };
+    return { responce: paginatedTutorials, totalCount: allPrograms.length };
   }
 
   async sortByName(text, page, size) {
@@ -110,7 +110,10 @@ export class TutorialService {
     for (const tutorial of allTutorials) {
       let count = 0;
       for (const word of text) {
-        if (tutorial && tutorial.title.includes(word)) {
+        if (
+          tutorial &&
+          tutorial.title.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
             filteredTutorials.push(tutorial);
@@ -124,7 +127,7 @@ export class TutorialService {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
       const paginatedTutorials = allTutorials.slice(startIndex, endIndex);
-      return { ...paginatedTutorials, totalCount: allTutorials.length };
+      return { responce: paginatedTutorials, totalCount: allTutorials.length };
     }
   }
 
