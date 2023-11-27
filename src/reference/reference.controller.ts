@@ -30,16 +30,7 @@ export class ReferenceController {
     @Param('referenceID') referenceID: string,
     @GetCurrentUserId() userId: number,
   ) {
-    return this.referenceService.addToUser(referenceID, userId);
-  }
-
-  @Public()
-  @Post('remove/:referenceID/:userID')
-  removeFromUser(
-    @Param('referenceID') referenceID: string,
-    @Param('userID') userID: string,
-  ) {
-    return this.referenceService.removeFromUser(referenceID, userID);
+    return this.referenceService.addAndRemove(referenceID, userId);
   }
 
   @Public()
@@ -72,6 +63,25 @@ export class ReferenceController {
     }
     if (page && size) {
       return await this.referenceService.showAllReferences(page, size);
+    } else {
+      throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get('/like')
+  async showAllBrushes(
+    @Query('program') program: string,
+    @Query('search') search: string,
+    @Query('page') page: string,
+    @Query('size') size: string,
+    @GetCurrentUserId() userId: number,
+  ) {
+    if (page && size) {
+      return await this.referenceService.showAllLikedReferences(
+        page,
+        size,
+        userId,
+      );
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }

@@ -30,16 +30,7 @@ export class TutorialController {
     @Param('referenceID') referenceID: string,
     @GetCurrentUserId() userId: number,
   ) {
-    return this.tutorialService.addToUser(referenceID, userId);
-  }
-
-  @Public()
-  @Post('remove/:tutorialID/:userID')
-  removeFromUser(
-    @Param('tutorialID') tutorialID: string,
-    @Param('userID') userID: string,
-  ) {
-    return this.tutorialService.removeFromUser(tutorialID, userID);
+    return this.tutorialService.addAndRemove(referenceID, userId);
   }
 
   @Public()
@@ -66,6 +57,25 @@ export class TutorialController {
     }
     if (page && size) {
       return await this.tutorialService.showAllTutorials(page, size);
+    } else {
+      throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get('/like')
+  async showAllLikedTutorials(
+    @Query('program') program: string,
+    @Query('search') search: string,
+    @Query('page') page: string,
+    @Query('size') size: string,
+    @GetCurrentUserId() userId: number,
+  ) {
+    if (page && size) {
+      return await this.tutorialService.showAllLikedTutorials(
+        page,
+        size,
+        userId,
+      );
     } else {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }

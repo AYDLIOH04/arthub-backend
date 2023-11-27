@@ -30,16 +30,7 @@ export class BrushController {
     @Param('brushID') brushID: string,
     @GetCurrentUserId() userId: number,
   ) {
-    return this.brushService.addToUser(brushID, userId);
-  }
-
-  @Public()
-  @Post('remove/:brushID/:userID')
-  removeFromUser(
-    @Param('brushID') brushID: string,
-    @Param('userID') userID: string,
-  ) {
-    return this.brushService.removeFromUser(brushID, userID);
+    return this.brushService.addAndRemove(brushID, userId);
   }
 
   @Public()

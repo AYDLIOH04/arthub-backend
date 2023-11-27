@@ -32,7 +32,7 @@ export class ReferenceService {
     }
   }
 
-  async addToUser(referenceID, userID) {
+  async addAndRemove(referenceID, userID) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userID,
@@ -55,23 +55,15 @@ export class ReferenceService {
       }
       throw new HttpException('Референс не найден', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException('Референс уже добавлен', HttpStatus.FORBIDDEN);
+      const updatedReferences = user.references.filter(
+        (reference) => reference != Number(referenceID),
+      );
+      await this.prisma.user.update({
+        where: { id: Number(userID) },
+        data: { references: updatedReferences },
+      });
+      return user;
     }
-  }
-
-  async removeFromUser(referenceID, userID) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
-    });
-    this.checkUser(user);
-    const updatedReference = user.references.filter(
-      (reference) => reference != Number(referenceID),
-    );
-    await this.prisma.user.update({
-      where: { id: Number(userID) },
-      data: { references: updatedReference },
-    });
-    return user;
   }
 
   async showUserReferences(userID) {
@@ -98,6 +90,28 @@ export class ReferenceService {
       take: Number(size),
     });
     return { response: cutAllReferences, totalCount: allReferences.length };
+  }
+
+  async showAllLikedReferences(page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+    const allReferences = await this.prisma.reference.findMany();
+    const userReferences = user.references;
+    const cutAllReferences = await this.prisma.reference.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    const updatedReferences = cutAllReferences.map((reference) => {
+      const isFavorite = userReferences.some(
+        (userReferences) => userReferences === reference.id,
+      );
+      return { ...reference, favorite: isFavorite };
+    });
+    return { response: updatedReferences, totalCount: allReferences.length };
   }
 
   async sortByName(text, page, size) {

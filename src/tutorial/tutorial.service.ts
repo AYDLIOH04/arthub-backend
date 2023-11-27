@@ -30,7 +30,7 @@ export class TutorialService {
     }
   }
 
-  async addToUser(tutorialID, userID) {
+  async addAndRemove(tutorialID, userID) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userID,
@@ -53,17 +53,40 @@ export class TutorialService {
       }
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException('Программа уже добавлена', HttpStatus.FORBIDDEN);
+      const updatedTutorials = user.tutorials.filter(
+        (tutorial) => tutorial != Number(tutorialID),
+      );
+      await this.prisma.user.update({
+        where: { id: Number(userID) },
+        data: { tutorials: updatedTutorials },
+      });
+      return user;
     }
   }
 
-  async removeFromUser(tutorialID, userID) {
+  async showAllLikedTutorials(page, size, userId) {
     const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
+      where: {
+        id: userId,
+      },
     });
     this.checkUser(user);
-    delete user.tutorials[tutorialID];
-    return user;
+    const allTutorials = await this.prisma.tutorial.findMany();
+    const userTutorials = user.tutorials;
+    const cutAllTutorials = await this.prisma.tutorial.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    const updatedTutorials = cutAllTutorials.map((tutorial) => {
+      const isFavorite = userTutorials.some(
+        (userTutorials) => userTutorials === tutorial.id,
+      );
+      return { ...tutorial, favorite: isFavorite };
+    });
+    return {
+      response: updatedTutorials,
+      totalCount: allTutorials.length,
+    };
   }
 
   async showAllTutorials(page, size) {

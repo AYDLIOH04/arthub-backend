@@ -29,7 +29,7 @@ export class BrushService {
     }
   }
 
-  async addToUser(brushID, userID) {
+  async addAndRemove(brushID, userID) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userID,
@@ -52,23 +52,15 @@ export class BrushService {
       }
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException('Кисть уже добавлена', HttpStatus.FORBIDDEN);
+      const updatedBrushes = user.brushes.filter(
+        (brush) => brush != Number(brushID),
+      );
+      await this.prisma.user.update({
+        where: { id: Number(userID) },
+        data: { brushes: updatedBrushes },
+      });
+      return user;
     }
-  }
-
-  async removeFromUser(brushID, userID) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: Number(userID) },
-    });
-    this.checkUser(user);
-    const updatedBrushes = user.brushes.filter(
-      (brush) => brush != Number(brushID),
-    );
-    await this.prisma.user.update({
-      where: { id: Number(userID) },
-      data: { brushes: updatedBrushes },
-    });
-    return user;
   }
 
   async showAllLikedBrushes(page, size, userId) {
@@ -78,8 +70,8 @@ export class BrushService {
       },
     });
     this.checkUser(user);
-    const userBrushes = user.brushes;
     const allBrushes = await this.prisma.brush.findMany();
+    const userBrushes = user.brushes;
     const cutAllBrushes = await this.prisma.brush.findMany({
       skip: (page - 1) * size,
       take: Number(size),
@@ -90,11 +82,7 @@ export class BrushService {
       );
       return { ...brush, favorite: isFavorite };
     });
-
-    const startIndex = (page - 1) * size;
-    const endIndex = page * size;
-    const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-    return { response: paginatedBrushes, totalCount: updatedBrushes.length };
+    return { response: updatedBrushes, totalCount: allBrushes.length };
   }
 
   async showAllBrushes(page, size) {
