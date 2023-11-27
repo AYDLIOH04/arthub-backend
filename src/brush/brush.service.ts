@@ -108,7 +108,7 @@ export class BrushService {
 
   async showBrushByID(brushID) {
     const brush = await this.prisma.brush.findUnique({
-      where: { id: parseInt(brushID) },
+      where: { id: Number(brushID) },
     });
     if (brush) {
       return brush;
