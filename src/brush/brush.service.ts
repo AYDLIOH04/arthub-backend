@@ -63,28 +63,6 @@ export class BrushService {
     }
   }
 
-  async showAllLikedBrushes(page, size, userId) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    this.checkUser(user);
-    const allBrushes = await this.prisma.brush.findMany();
-    const userBrushes = user.brushes;
-    const cutAllBrushes = await this.prisma.brush.findMany({
-      skip: (page - 1) * size,
-      take: Number(size),
-    });
-    const updatedBrushes = cutAllBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
-        (userBrushes) => userBrushes === brush.id,
-      );
-      return { ...brush, favorite: isFavorite };
-    });
-    return { response: updatedBrushes, totalCount: allBrushes.length };
-  }
-
   async showAllBrushes(page, size) {
     const allBrushes = await this.prisma.brush.findMany();
     const cutAllBrushes = await this.prisma.brush.findMany({
@@ -121,32 +99,6 @@ export class BrushService {
     return { response: paginatedBrushes, totalCount: allBrushes.length };
   }
 
-  async sortByName(text, page, size) {
-    text = text.split(' ');
-    const needCount = text.length;
-    const allBrushes = await this.prisma.brush.findMany();
-    const filteredBrushes = [];
-    for (const brush of allBrushes) {
-      let count = 0;
-      for (const word of text) {
-        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
-          count += 1;
-          if (count == needCount) {
-            filteredBrushes.push(brush);
-          }
-        }
-      }
-    }
-    if (filteredBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
-    } else {
-      const startIndex = (page - 1) * size;
-      const endIndex = page * size;
-      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
-    }
-  }
-
   async sortByNameAndProgram(program, text, page, size) {
     const allBrushes = await this.prisma.brush.findMany({
       where: { program: { contains: program, mode: 'insensitive' } },
@@ -178,6 +130,179 @@ export class BrushService {
       const endIndex = page * size;
       const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
       return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+    }
+  }
+
+  async showAllLikedBrushes(page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+    const allBrushes = await this.prisma.brush.findMany();
+    const userBrushes = user.brushes;
+    const cutAllBrushes = await this.prisma.brush.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    const updatedBrushes = cutAllBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      return { ...brush, favorite: isFavorite };
+    });
+    return { response: updatedBrushes, totalCount: allBrushes.length };
+  }
+
+  async sortByName(text, page, size) {
+    text = text.split(' ');
+    const needCount = text.length;
+    const allBrushes = await this.prisma.brush.findMany();
+    const filteredBrushes = [];
+    for (const brush of allBrushes) {
+      let count = 0;
+      for (const word of text) {
+        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+          count += 1;
+          if (count == needCount) {
+            filteredBrushes.push(brush);
+          }
+        }
+      }
+    }
+    if (filteredBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
+      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+    }
+  }
+
+  async showLikedByNameAndProgram(program, text, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allBrushes = await this.prisma.brush.findMany({
+      where: { program: { contains: program, mode: 'insensitive' } },
+    });
+    if (allBrushes.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const userBrushes = user.brushes;
+    const filteredBrushes = [];
+    for (const brush of allBrushes) {
+      let count = 0;
+      for (const word of text) {
+        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+          count += 1;
+          if (count == needCount) {
+            filteredBrushes.push(brush);
+          }
+        }
+      }
+    }
+    const updatedBrushes = filteredBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      return { ...brush, favorite: isFavorite };
+    });
+    if (updatedBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
+      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+    }
+  }
+
+  async showLikedByName(text, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const allBrushes = await this.prisma.brush.findMany();
+    const userBrushes = user.brushes;
+    const filteredBrushes = [];
+    for (const brush of allBrushes) {
+      let count = 0;
+      for (const word of text) {
+        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+          count += 1;
+          if (count == needCount) {
+            filteredBrushes.push(brush);
+          }
+        }
+      }
+    }
+    const updatedBrushes = filteredBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      return { ...brush, favorite: isFavorite };
+    });
+    if (updatedBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
+      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+    }
+  }
+
+  async showLikedByProgram(program, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allBrushes = await this.prisma.brush.findMany({
+      where: { program: { contains: program, mode: 'insensitive' } },
+    });
+    if (allBrushes.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const userBrushes = user.brushes;
+    const updatedBrushes = allBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      if (program === brush.program) {
+        return { ...brush, favorite: isFavorite };
+      }
+    });
+    if (updatedBrushes.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
+      return { response: paginatedBrushes, totalCount: allBrushes.length };
     }
   }
 
