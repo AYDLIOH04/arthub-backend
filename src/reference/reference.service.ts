@@ -257,7 +257,7 @@ export class ReferenceService {
     const allReferences = await this.prisma.reference.findMany({
       where: {
         hashtag: {
-          contains: tag[0].toUpperCase() + tag.slice(1),
+          contains: tag,
           mode: 'insensitive',
         },
       },
@@ -322,7 +322,7 @@ export class ReferenceService {
     }
   }
 
-  async showLikedByNameAndTag(program, text, page, size, userId) {
+  async showLikedByNameAndTag(tag, text, page, size, userId) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -330,15 +330,15 @@ export class ReferenceService {
     });
     this.checkUser(user);
 
-    const allBrushes = await this.prisma.brush.findMany({
+    const allReferences = await this.prisma.reference.findMany({
       where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
+        hashtag: {
+          contains: tag,
           mode: 'insensitive',
         },
       },
     });
-    if (allBrushes.length === 0) {
+    if (allReferences.length === 0) {
       throw new HttpException(
         'Кисть с такой программой не найдена',
         HttpStatus.NOT_FOUND,
@@ -347,34 +347,40 @@ export class ReferenceService {
 
     text = text.split(' ');
     const needCount = text.length;
-    const userBrushes = user.brushes;
-    const filteredBrushes = [];
-    for (const brush of allBrushes) {
+    const userReferences = user.references;
+    const filteredReferences = [];
+    for (const reference of allReferences) {
       let count = 0;
       for (const word of text) {
-        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+        if (
+          reference &&
+          reference.title.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
-            filteredBrushes.push(brush);
+            filteredReferences.push(reference);
           }
         }
       }
     }
-    const updatedBrushes = filteredBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
-        (userBrushes) => userBrushes === brush.id,
+    const updatedReferences = filteredReferences.map((reference) => {
+      const isFavorite = userReferences.some(
+        (userBrushes) => userBrushes === reference.id,
       );
-      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
-        return { ...brush, favorite: isFavorite };
+      if (reference.hashtag.includes(tag)) {
+        return { ...reference, favorite: isFavorite };
       }
     });
-    if (updatedBrushes.length === 0) {
+    if (updatedReferences.length === 0) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
-      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+      const paginatedReferences = updatedReferences.slice(startIndex, endIndex);
+      return {
+        response: paginatedReferences,
+        totalCount: filteredReferences.length,
+      };
     }
   }
 
