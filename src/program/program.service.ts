@@ -155,7 +155,7 @@ export class ProgramService {
       );
       return { ...program, favorite: isFavorite };
     });
-    return { response: updatedPrograms, totalCount: allPrograms.length };
+    return updatedPrograms;
   }
 
   async showLikedByName(text, userId) {
@@ -194,7 +194,7 @@ export class ProgramService {
     if (updatedPrograms.length === 0) {
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
     } else {
-      return { response: updatedPrograms, totalCount: filteredPrograms.length };
+      return updatedPrograms;
     }
   }
 
@@ -232,7 +232,7 @@ export class ProgramService {
     if (updatedPrograms.length === 0) {
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
     } else {
-      return { response: updatedPrograms, totalCount: allPrograms.length };
+      return updatedPrograms;
     }
   }
 
@@ -288,7 +288,7 @@ export class ProgramService {
     if (updatedPrograms.length === 0) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
-      return { response: updatedPrograms, totalCount: filteredPrograms.length };
+      return updatedPrograms;
     }
   }
 

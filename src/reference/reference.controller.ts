@@ -70,12 +70,37 @@ export class ReferenceController {
 
   @Get('/like')
   async showAllBrushes(
-    @Query('program') program: string,
+    @Query('tag') tag: string,
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
     @GetCurrentUserId() userId: number,
   ) {
+    if (tag && search && page && size) {
+      return await this.referenceService.showAllLikedReferences(
+        tag,
+        search,
+        page,
+        size,
+        userId,
+      );
+    }
+    if (search && page && size) {
+      return await this.referenceService.showAllLikedReferences(
+        search,
+        page,
+        size,
+        userId,
+      );
+    }
+    if (tag && page && size) {
+      return await this.referenceService.showAllLikedReferences(
+        tag,
+        page,
+        size,
+        userId,
+      );
+    }
     if (page && size) {
       return await this.referenceService.showAllLikedReferences(
         page,

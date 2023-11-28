@@ -247,6 +247,28 @@ export class ReferenceService {
     }
   }
 
+  async showAllLikedByTag(page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+    const allBrushes = await this.prisma.brush.findMany();
+    const userBrushes = user.brushes;
+    const cutAllBrushes = await this.prisma.brush.findMany({
+      skip: (page - 1) * size,
+      take: Number(size),
+    });
+    const updatedBrushes = cutAllBrushes.map((brush) => {
+      const isFavorite = userBrushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      return { ...brush, favorite: isFavorite };
+    });
+    return { response: updatedBrushes, totalCount: allBrushes.length };
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
