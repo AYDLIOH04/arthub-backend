@@ -153,7 +153,8 @@ export class ProgramService {
       const isFavorite = userPrograms.some(
         (userPrograms) => userPrograms === program.id,
       );
-      return { ...program, favorite: isFavorite };
+      const systems = program.systems.split(' ');
+      return { ...program, favorite: isFavorite, systems };
     });
     return updatedPrograms;
   }
@@ -189,7 +190,8 @@ export class ProgramService {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
-      return { ...program, favorite: isFavorite };
+      const systems = program.systems.split(' ');
+      return { ...program, favorite: isFavorite, systems };
     });
     if (updatedPrograms.length === 0) {
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
@@ -226,7 +228,8 @@ export class ProgramService {
         (userBrushes) => userBrushes === program.id,
       );
       if (system[0].toUpperCase() + system.slice(1) === program.systems) {
-        return { ...program, favorite: isFavorite };
+        const systems = program.systems.split(' ');
+        return { ...program, favorite: isFavorite, systems };
       }
     });
     if (updatedPrograms.length === 0) {
@@ -282,7 +285,8 @@ export class ProgramService {
         (userBrushes) => userBrushes === program.id,
       );
       if (system[0].toUpperCase() + system.slice(1) === program.systems) {
-        return { ...program, favorite: isFavorite };
+        const systems = program.systems.split(' ');
+        return { ...program, favorite: isFavorite, systems };
       }
     });
     if (updatedPrograms.length === 0) {

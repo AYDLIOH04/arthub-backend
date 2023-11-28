@@ -254,7 +254,14 @@ export class ReferenceService {
       },
     });
     this.checkUser(user);
-    const allReferences = await this.prisma.reference.findMany();
+    const allReferences = await this.prisma.reference.findMany({
+      where: {
+        hashtag: {
+          contains: tag[0].toUpperCase() + tag.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
     const userReferences = user.references;
     const cutAllReferences = await this.prisma.reference.findMany({
       skip: (page - 1) * size,
