@@ -227,7 +227,7 @@ export class ProgramService {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
-      if (system[0].toUpperCase() + system.slice(1) === program.systems) {
+      if (program.systems.includes(system[0].toUpperCase() + system.slice(1))) {
         const systems = program.systems.split(' ');
         return { ...program, favorite: isFavorite, systems };
       }
@@ -284,7 +284,7 @@ export class ProgramService {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
-      if (system[0].toUpperCase() + system.slice(1) === program.systems) {
+      if (program.systems.includes(system[0].toUpperCase() + system.slice(1))) {
         const systems = program.systems.split(' ');
         return { ...program, favorite: isFavorite, systems };
       }

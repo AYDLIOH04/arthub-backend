@@ -286,33 +286,39 @@ export class ReferenceService {
 
     text = text.split(' ');
     const needCount = text.length;
-    const allBrushes = await this.prisma.brush.findMany();
-    const userBrushes = user.brushes;
-    const filteredBrushes = [];
-    for (const brush of allBrushes) {
+    const allReferences = await this.prisma.reference.findMany();
+    const userReferences = user.references;
+    const filteredReferences = [];
+    for (const reference of allReferences) {
       let count = 0;
       for (const word of text) {
-        if (brush && brush.title.toLowerCase().includes(word.toLowerCase())) {
+        if (
+          reference &&
+          reference.title.toLowerCase().includes(word.toLowerCase())
+        ) {
           count += 1;
           if (count == needCount) {
-            filteredBrushes.push(brush);
+            filteredReferences.push(reference);
           }
         }
       }
     }
-    const updatedBrushes = filteredBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
-        (userBrushes) => userBrushes === brush.id,
+    const updatedReferences = filteredReferences.map((reference) => {
+      const isFavorite = userReferences.some(
+        (userBrushes) => userBrushes === reference.id,
       );
-      return { ...brush, favorite: isFavorite };
+      return { ...reference, favorite: isFavorite };
     });
-    if (updatedBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    if (updatedReferences.length === 0) {
+      throw new HttpException('Референс не найден', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
-      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
+      const paginatedReferences = updatedReferences.slice(startIndex, endIndex);
+      return {
+        response: paginatedReferences,
+        totalCount: filteredReferences.length,
+      };
     }
   }
 
