@@ -139,6 +139,159 @@ export class ProgramService {
     return selectedPrograms;
   }
 
+  async showAllLikedPrograms(userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allPrograms = await this.prisma.program.findMany();
+    const userPrograms = user.programs;
+    const updatedPrograms = allPrograms.map((program) => {
+      const isFavorite = userPrograms.some(
+        (userPrograms) => userPrograms === program.id,
+      );
+      return { ...program, favorite: isFavorite };
+    });
+    return { response: updatedPrograms, totalCount: allPrograms.length };
+  }
+
+  async showLikedByName(text, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const allPrograms = await this.prisma.program.findMany();
+    const userPrograms = user.programs;
+    const filteredPrograms = [];
+    for (const program of allPrograms) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          program &&
+          program.name.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredPrograms.push(program);
+          }
+        }
+      }
+    }
+    const updatedPrograms = filteredPrograms.map((program) => {
+      const isFavorite = userPrograms.some(
+        (userBrushes) => userBrushes === program.id,
+      );
+      return { ...program, favorite: isFavorite };
+    });
+    if (updatedPrograms.length === 0) {
+      throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      return { response: updatedPrograms, totalCount: filteredPrograms.length };
+    }
+  }
+
+  async showLikedBySystem(system, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allPrograms = await this.prisma.program.findMany({
+      where: {
+        systems: {
+          contains: system[0].toUpperCase() + system.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException(
+        'Программа с такой системой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const userPrograms = user.programs;
+    const updatedPrograms = allPrograms.map((program) => {
+      const isFavorite = userPrograms.some(
+        (userBrushes) => userBrushes === program.id,
+      );
+      if (system[0].toUpperCase() + system.slice(1) === program.systems) {
+        return { ...program, favorite: isFavorite };
+      }
+    });
+    if (updatedPrograms.length === 0) {
+      throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      return { response: updatedPrograms, totalCount: allPrograms.length };
+    }
+  }
+
+  async showLikedByNameAndSystem(system, text, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allPrograms = await this.prisma.program.findMany({
+      where: {
+        systems: {
+          contains: system[0].toUpperCase() + system.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const userPrograms = user.programs;
+    const filteredPrograms = [];
+    for (const program of allPrograms) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          program &&
+          program.name.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredPrograms.push(program);
+          }
+        }
+      }
+    }
+    const updatedPrograms = filteredPrograms.map((program) => {
+      const isFavorite = userPrograms.some(
+        (userBrushes) => userBrushes === program.id,
+      );
+      if (system[0].toUpperCase() + system.slice(1) === program.systems) {
+        return { ...program, favorite: isFavorite };
+      }
+    });
+    if (updatedPrograms.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      return { response: updatedPrograms, totalCount: filteredPrograms.length };
+    }
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);

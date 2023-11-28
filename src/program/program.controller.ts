@@ -5,15 +5,11 @@ import {
   Param,
   Post,
   Query,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { GetCurrentUserId, Public } from '../common/decorators';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ProgramService } from './program.service';
-import { ProgramDto } from './dto/program.dto';
-import * as process from 'process';
 import { ProgramFullDto } from './dto/fullProgram.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
@@ -60,7 +56,7 @@ export class ProgramController {
 
   @Public()
   @Get()
-  showAllBrushes(
+  showAllPrograms(
     @Query('system') system: string,
     @Query('search') search: string,
   ) {
@@ -70,6 +66,29 @@ export class ProgramController {
       return this.programmService.sortByName(search);
     } else {
       return this.programmService.showAllPrograms();
+    }
+  }
+
+  @Get('/like')
+  async showAllBrushes(
+    @Query('system') system: string,
+    @Query('search') search: string,
+    @GetCurrentUserId() userId: number,
+  ) {
+    if (system && search) {
+      return await this.programmService.showLikedByNameAndSystem(
+        system,
+        search,
+        userId,
+      );
+    }
+    if (system) {
+      return await this.programmService.showLikedBySystem(system, userId);
+    }
+    if (search) {
+      return await this.programmService.showLikedByName(search, userId);
+    } else {
+      return await this.programmService.showAllLikedPrograms(userId);
     }
   }
 

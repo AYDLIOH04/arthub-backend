@@ -233,7 +233,9 @@ export class BrushService {
       const isFavorite = userBrushes.some(
         (userBrushes) => userBrushes === brush.id,
       );
-      return { ...brush, favorite: isFavorite };
+      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
+        return { ...brush, favorite: isFavorite };
+      }
     });
     if (updatedBrushes.length === 0) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
