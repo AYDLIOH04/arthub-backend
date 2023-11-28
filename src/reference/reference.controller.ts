@@ -77,7 +77,7 @@ export class ReferenceController {
     @GetCurrentUserId() userId: number,
   ) {
     if (tag && search && page && size) {
-      return await this.referenceService.showAllLikedReferences(
+      return await this.referenceService.showLikedByNameAndTag(
         tag,
         search,
         page,
@@ -86,7 +86,7 @@ export class ReferenceController {
       );
     }
     if (search && page && size) {
-      return await this.referenceService.showAllLikedReferences(
+      return await this.referenceService.showLikedByName(
         search,
         page,
         size,
@@ -94,7 +94,7 @@ export class ReferenceController {
       );
     }
     if (tag && page && size) {
-      return await this.referenceService.showAllLikedReferences(
+      return await this.referenceService.showLikedByTag(
         tag,
         page,
         size,
