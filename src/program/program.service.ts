@@ -65,7 +65,14 @@ export class ProgramService {
       }
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
     } else {
-      throw new HttpException('Программа уже добавлена', HttpStatus.FORBIDDEN);
+      const updatedPrograms = user.programs.filter(
+        (program) => program != Number(programmID),
+      );
+      await this.prisma.user.update({
+        where: { id: Number(userID) },
+        data: { programs: updatedPrograms },
+      });
+      return user;
     }
   }
 
