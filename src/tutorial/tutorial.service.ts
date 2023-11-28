@@ -197,6 +197,155 @@ export class TutorialService {
     }
   }
 
+  async showLikedByName(text, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const allTutorials = await this.prisma.tutorial.findMany();
+    const userTutorials = user.tutorials;
+    const filteredTutorials = [];
+    for (const tutorial of allTutorials) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          tutorial &&
+          tutorial.title.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredTutorials.push(tutorial);
+          }
+        }
+      }
+    }
+    const updatedTutorials = filteredTutorials.map((tutorial) => {
+      const isFavorite = userTutorials.some(
+        (userBrushes) => userBrushes === tutorial.id,
+      );
+      return { ...tutorial, favorite: isFavorite };
+    });
+    if (updatedTutorials.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedTutorials = updatedTutorials.slice(startIndex, endIndex);
+      return {
+        response: paginatedTutorials,
+        totalCount: filteredTutorials.length,
+      };
+    }
+  }
+
+  async showLikedByProgram(program, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allTutorials = await this.prisma.tutorial.findMany({
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (allTutorials.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const userTutorials = user.tutorials;
+    const updatedTutorials = allTutorials.map((tutorial) => {
+      const isFavorite = userTutorials.some(
+        (userBrushes) => userBrushes === tutorial.id,
+      );
+      if (program[0].toUpperCase() + program.slice(1) === tutorial.program) {
+        return { ...tutorial, favorite: isFavorite };
+      }
+    });
+    if (updatedTutorials.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedTutorials = updatedTutorials.slice(startIndex, endIndex);
+      return { response: paginatedTutorials, totalCount: allTutorials.length };
+    }
+  }
+
+  async showLikedByNameAndProgram(program, text, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allTutorials = await this.prisma.tutorial.findMany({
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (allTutorials.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const userTutorials = user.tutorials;
+    const filteredTutorials = [];
+    for (const tutorial of allTutorials) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          tutorial &&
+          tutorial.title.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredTutorials.push(tutorial);
+          }
+        }
+      }
+    }
+    const updatedTutorials = filteredTutorials.map((tutorial) => {
+      const isFavorite = userTutorials.some(
+        (userBrushes) => userBrushes === tutorial.id,
+      );
+      if (program[0].toUpperCase() + program.slice(1) === tutorial.program) {
+        return { ...tutorial, favorite: isFavorite };
+      }
+    });
+    if (updatedTutorials.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedTutorials = updatedTutorials.slice(startIndex, endIndex);
+      return {
+        response: paginatedTutorials,
+        totalCount: filteredTutorials.length,
+      };
+    }
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);

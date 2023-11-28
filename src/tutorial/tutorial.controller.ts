@@ -70,6 +70,31 @@ export class TutorialController {
     @Query('size') size: string,
     @GetCurrentUserId() userId: number,
   ) {
+    if (program && search && page && size) {
+      return await this.tutorialService.showLikedByNameAndProgram(
+        program,
+        search,
+        page,
+        size,
+        userId,
+      );
+    }
+    if (program && page && size) {
+      return await this.tutorialService.showLikedByProgram(
+        program,
+        page,
+        size,
+        userId,
+      );
+    }
+    if (search && page && size) {
+      return await this.tutorialService.showLikedByName(
+        search,
+        page,
+        size,
+        userId,
+      );
+    }
     if (page && size) {
       return await this.tutorialService.showAllLikedTutorials(
         page,
