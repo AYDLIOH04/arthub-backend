@@ -85,7 +85,12 @@ export class BrushService {
 
   async sortByProgram(program, page, size) {
     const allBrushes = await this.prisma.brush.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
     });
     if (allBrushes.length === 0) {
       throw new HttpException(
@@ -101,7 +106,12 @@ export class BrushService {
 
   async sortByNameAndProgram(program, text, page, size) {
     const allBrushes = await this.prisma.brush.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
     });
     if (allBrushes.length === 0) {
       throw new HttpException(
@@ -190,7 +200,12 @@ export class BrushService {
     this.checkUser(user);
 
     const allBrushes = await this.prisma.brush.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
     });
     if (allBrushes.length === 0) {
       throw new HttpException(
@@ -279,7 +294,12 @@ export class BrushService {
     this.checkUser(user);
 
     const allBrushes = await this.prisma.brush.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: {
+        program: {
+          contains: program[0].toUpperCase() + program.slice(1),
+          mode: 'insensitive',
+        },
+      },
     });
     if (allBrushes.length === 0) {
       throw new HttpException(
@@ -292,7 +312,7 @@ export class BrushService {
       const isFavorite = userBrushes.some(
         (userBrushes) => userBrushes === brush.id,
       );
-      if (program === brush.program) {
+      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
         return { ...brush, favorite: isFavorite };
       }
     });
