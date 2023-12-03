@@ -1,10 +1,17 @@
 import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ReferenceDto {
-  title: any;
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
-  hashtag: any;
+  @IsNotEmpty()
+  @IsString()
+  hashtag: string;
 
+  @IsNotEmpty()
+  @IsString()
   @Type(() => File)
-  image: any;
+  image: string;
 }

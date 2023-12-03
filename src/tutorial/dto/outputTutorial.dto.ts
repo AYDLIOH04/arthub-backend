@@ -2,7 +2,29 @@ import { IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TutorialDto {
+export class OutputTutorialDto {
+  @ApiProperty({
+    example: '1',
+    description: 'Уникальный идентификатор',
+  })
+  id: number;
+
+  @ApiProperty({
+    example: '2023-12-01T10:17:56.152Z',
+    description: 'Время создания',
+  })
+  @IsNotEmpty()
+  @IsString()
+  createdAt: string;
+
+  @ApiProperty({
+    example: '2023-12-01T10:17:56.152Z',
+    description: 'Время обновления данных',
+  })
+  @IsNotEmpty()
+  @IsString()
+  updatedAt: string;
+
   @ApiProperty({
     example: 'title',
     description: 'Уникальное название туториала',
