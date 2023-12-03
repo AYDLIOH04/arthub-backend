@@ -1,15 +1,23 @@
-import { IsInt, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class BrushDto {
-  title: any;
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
-  link: any;
+  @IsNotEmpty()
+  @IsString()
+  link: string;
 
-  description: any;
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
+  @IsNotEmpty()
+  @IsString()
   program: string;
 
   @Type(() => File)
-  image: any;
+  image: string;
 }

@@ -91,7 +91,6 @@ export class ProgramService {
       return {
         id: program.id,
         name: program.name,
-        link: program.link,
         systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
@@ -107,6 +106,28 @@ export class ProgramService {
     return this.toList(program);
   }
 
+  async sortBySystemAndName(name) {
+    const programs = await this.prisma.program.findMany({
+      where: {
+        systems: {
+          contains: name[0].toUpperCase() + name.slice(1),
+          mode: 'insensitive',
+        },
+        name: { contains: name, mode: 'insensitive' },
+      },
+    });
+    const selectedPrograms = programs.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    return selectedPrograms;
+  }
+
   async sortBySystem(name) {
     const programs = await this.prisma.program.findMany({
       where: {
@@ -120,7 +141,6 @@ export class ProgramService {
       return {
         id: program.id,
         name: program.name,
-        link: program.link,
         systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
@@ -137,7 +157,6 @@ export class ProgramService {
       return {
         id: program.id,
         name: program.name,
-        link: program.link,
         systems: program.systems.split(' '),
         description: program.description,
         logo: program.logo,
@@ -156,12 +175,20 @@ export class ProgramService {
 
     const allPrograms = await this.prisma.program.findMany();
     const userPrograms = user.programs;
-    const updatedPrograms = allPrograms.map((program) => {
+    const selectedPrograms = allPrograms.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    const updatedPrograms = selectedPrograms.map((program) => {
       const isFavorite = userPrograms.some(
         (userPrograms) => userPrograms === program.id,
       );
-      const systems = program.systems.split(' ');
-      return { ...program, favorite: isFavorite, systems };
+      return { ...program, favorite: isFavorite };
     });
     return updatedPrograms;
   }
@@ -193,12 +220,20 @@ export class ProgramService {
         }
       }
     }
-    const updatedPrograms = filteredPrograms.map((program) => {
+    const selectedPrograms = filteredPrograms.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    const updatedPrograms = selectedPrograms.map((program) => {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
-      const systems = program.systems.split(' ');
-      return { ...program, favorite: isFavorite, systems };
+      return { ...program, favorite: isFavorite };
     });
     if (updatedPrograms.length === 0) {
       throw new HttpException('Программа не найдена', HttpStatus.NOT_FOUND);
@@ -230,13 +265,21 @@ export class ProgramService {
       );
     }
     const userPrograms = user.programs;
-    const updatedPrograms = allPrograms.map((program) => {
+    const selectedPrograms = allPrograms.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    const updatedPrograms = selectedPrograms.map((program) => {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
       if (program.systems.includes(system[0].toUpperCase() + system.slice(1))) {
-        const systems = program.systems.split(' ');
-        return { ...program, favorite: isFavorite, systems };
+        return { ...program, favorite: isFavorite };
       }
     });
     if (updatedPrograms.length === 0) {
@@ -287,13 +330,21 @@ export class ProgramService {
         }
       }
     }
-    const updatedPrograms = filteredPrograms.map((program) => {
+    const selectedPrograms = filteredPrograms.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    const updatedPrograms = selectedPrograms.map((program) => {
       const isFavorite = userPrograms.some(
         (userBrushes) => userBrushes === program.id,
       );
       if (program.systems.includes(system[0].toUpperCase() + system.slice(1))) {
-        const systems = program.systems.split(' ');
-        return { ...program, favorite: isFavorite, systems };
+        return { ...program, favorite: isFavorite };
       }
     });
     if (updatedPrograms.length === 0) {

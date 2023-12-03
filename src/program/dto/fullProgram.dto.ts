@@ -1,21 +1,32 @@
 import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class ProgramFullDto {
-  name: any;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-  link: any;
+  @IsNotEmpty()
+  @IsString()
+  link: string;
 
-  systems: any;
+  @IsNotEmpty()
+  @IsString()
+  systems: string;
 
-  description: any;
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
   @Type(() => File)
-  logo: any;
+  logo: string;
 
-  pluses: any;
+  @IsString()
+  pluses: string;
 
-  minuses: any;
+  @IsString()
+  minuses: string;
 
   @Type(() => File)
-  examples: any;
+  examples: string;
 }

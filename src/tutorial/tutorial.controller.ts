@@ -14,10 +14,26 @@ import { GetCurrentUserId, Public } from '../common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { TutorialDto } from './dto/tutorial.dto';
 import { TutorialService } from './tutorial.service';
+import { userInfo } from 'os';
+import { UserDto } from 'src/Users/dto/User.dto';
+import { FullUserDto } from 'src/Users/dto/FullUser.dto';
+import { OutputTutorialDto } from './dto/outputTutorial.dto';
+import {
+  ApiHeader,
+  ApiQuery,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiParam,
+} from '@nestjs/swagger';
+import { paginatedTutorialsDto } from './dto/paginatedTutorials.dto';
 
+@ApiTags('Туториалы')
 @Controller('tutorials')
 export class TutorialController {
   constructor(private tutorialService: TutorialService) {}
+  @ApiOperation({ summary: 'Создание туториала' })
+  @ApiResponse({ status: 200, type: OutputTutorialDto })
   @Public()
   @UseInterceptors(FileInterceptor('image'))
   @Post('create')
@@ -25,6 +41,14 @@ export class TutorialController {
     return this.tutorialService.createTutorial(dto, image);
   }
 
+  @ApiOperation({
+    summary: 'Добавление или удаление любимого туториала к пользователю',
+  })
+  @ApiResponse({ status: 200, type: FullUserDto })
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Bearer: ассез токен для авторизации',
+  })
   @Post(':referenceID/add-favorite')
   addToUser(
     @Param('referenceID') referenceID: string,
@@ -33,6 +57,8 @@ export class TutorialController {
     return this.tutorialService.addAndRemove(referenceID, userId);
   }
 
+  @ApiOperation({ summary: 'Вывод всех туториалов' })
+  @ApiResponse({ status: 200, type: [paginatedTutorialsDto] })
   @Public()
   @Get()
   async showAllTutorials(
@@ -62,6 +88,8 @@ export class TutorialController {
     }
   }
 
+  @ApiOperation({ summary: 'Вывод всех туториалов с полем favorite' })
+  @ApiResponse({ status: 200, type: TutorialDto })
   @Get('/like')
   async showAllLikedTutorials(
     @Query('program') program: string,
@@ -106,6 +134,9 @@ export class TutorialController {
     }
   }
 
+  @ApiOperation({ summary: 'Вывод туториала по ID' })
+  @ApiParam({ name: 'tutorialID', description: 'ID туториала' })
+  @ApiResponse({ status: 200, type: OutputTutorialDto })
   @Public()
   @Get('/:tutorialID')
   showTutorialByID(@Param('tutorialID') tutorialID: string) {
