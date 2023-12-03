@@ -29,8 +29,8 @@ export class ProgramService {
       const newProgram = await this.prisma.program.create({
         data: {
           ...dto,
-          logo: `http://localhost:7000/${file1}`,
-          examples: `http://localhost:7000/${file2} http://localhost:7000/${file3} http://localhost:7000/${file4}`,
+          logo: `${process.env.URL}/${file1}`,
+          examples: `${process.env.URL}/${file2} ${process.env.URL}/${file3} ${process.env.URL}/${file4}`,
         },
       });
       return newProgram;

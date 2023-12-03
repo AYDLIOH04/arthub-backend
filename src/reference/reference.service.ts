@@ -21,7 +21,7 @@ export class ReferenceService {
     if (flag) {
       const fileName = await this.fileService.createFile(image);
       const newReference = await this.prisma.reference.create({
-        data: { ...dto, image: `http://localhost:7000/${fileName}` },
+        data: { ...dto, image: `${process.env.URL}/${fileName}` },
       });
       return newReference;
     } else {

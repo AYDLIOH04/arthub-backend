@@ -19,7 +19,7 @@ export class TutorialService {
     if (!hasDuplicate) {
       const fileName = await this.fileService.createFile(image);
       const newTutorial = await this.prisma.tutorial.create({
-        data: { ...dto, image: `http://localhost:7000/${fileName}` },
+        data: { ...dto, image: `${process.env.URL}/${fileName}` },
       });
       return newTutorial;
     } else {
