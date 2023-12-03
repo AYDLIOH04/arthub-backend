@@ -16,7 +16,7 @@ import { TutorialDto } from './dto/tutorial.dto';
 import { TutorialService } from './tutorial.service';
 import { userInfo } from 'os';
 import { UserDto } from 'src/Users/dto/User.dto';
-import { FullUserDto } from 'src/Users/dto/FullUser.dto';
+import { FullUserDto } from 'src/user/dto/FullUser.dto';
 import { OutputTutorialDto } from './dto/outputTutorial.dto';
 import {
   ApiHeader,
