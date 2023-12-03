@@ -3,7 +3,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AccessTokenGuard } from './common/guards';
 import { APP_GUARD } from '@nestjs/core';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './user/user.module';
 import { BrushController } from './brush/brush.controller';
 import { BrushService } from './brush/brush.service';
 import { BrushModule } from './brush/brush.module';
