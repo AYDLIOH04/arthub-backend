@@ -1,10 +1,10 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { GetCurrentUserId, Public } from '../common/decorators';
 
 @Controller('users')
-export class UsersController {
-  constructor(private userService: UsersService) {}
+export class UserController {
+  constructor(private userService: UserService) {}
   @Public()
   @Get()
   getAll() {
