@@ -41,7 +41,7 @@ export class ReferenceController {
 
   @Public()
   @Get()
-  async showAllReference(
+  async showAllReferences(
     @Query('tag') tag: string,
     @Query('search') search: string,
     @Query('page') page: string,
@@ -69,7 +69,7 @@ export class ReferenceController {
   }
 
   @Get('/like')
-  async showAllBrushes(
+  async showAllLikedReferences(
     @Query('tag') tag: string,
     @Query('search') search: string,
     @Query('page') page: string,

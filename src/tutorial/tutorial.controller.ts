@@ -61,21 +61,25 @@ export class TutorialController {
   @Public()
   @Get()
   async showAllTutorials(
-    @Query('program') program: string,
+    @Query('difficulty') difficulty: string,
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
   ) {
-    if (program && search && page && size) {
-      return await this.tutorialService.sortByProgramAndName(
-        program,
+    if (difficulty && search && page && size) {
+      return await this.tutorialService.sortByDifficultyAndName(
+        difficulty,
         search,
         page,
         size,
       );
     }
-    if (program && page && size) {
-      return await this.tutorialService.sortByProgram(program, page, size);
+    if (difficulty && page && size) {
+      return await this.tutorialService.sortByDifficulty(
+        difficulty,
+        page,
+        size,
+      );
     }
     if (search && page && size) {
       return await this.tutorialService.sortByName(search, page, size);
@@ -91,24 +95,24 @@ export class TutorialController {
   @ApiResponse({ status: 200, type: TutorialDto })
   @Get('/like')
   async showAllLikedTutorials(
-    @Query('program') program: string,
+    @Query('difficulty') difficulty: string,
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('size') size: string,
     @GetCurrentUserId() userId: number,
   ) {
-    if (program && search && page && size) {
-      return await this.tutorialService.showLikedByNameAndProgram(
-        program,
+    if (difficulty && search && page && size) {
+      return await this.tutorialService.showLikedByNameAndDifficulty(
+        difficulty,
         search,
         page,
         size,
         userId,
       );
     }
-    if (program && page && size) {
-      return await this.tutorialService.showLikedByProgram(
-        program,
+    if (difficulty && page && size) {
+      return await this.tutorialService.showLikedByDifficulty(
+        difficulty,
         page,
         size,
         userId,

@@ -63,7 +63,7 @@ model Tutorial {
   title       String @unique
   link        String
   description String
-  program     String
+  difficulty  String
   author      String
   image       String
 

@@ -109,11 +109,11 @@ export class TutorialService {
     }
   }
 
-  async sortByProgram(program, page, size) {
+  async sortByDifficulty(difficulty, page, size) {
     const allPrograms = await this.prisma.tutorial.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: { difficulty: { contains: difficulty, mode: 'insensitive' } },
     });
-    if (allPrograms.length === 0) {
+    if (!allPrograms.length) {
       throw new HttpException(
         'Туториал с такой программой не найден',
         HttpStatus.NOT_FOUND,
@@ -157,11 +157,11 @@ export class TutorialService {
     }
   }
 
-  async sortByProgramAndName(program, text, page, size) {
+  async sortByDifficultyAndName(difficulty, text, page, size) {
     const allPrograms = await this.prisma.tutorial.findMany({
-      where: { program: { contains: program, mode: 'insensitive' } },
+      where: { difficulty: { contains: difficulty, mode: 'insensitive' } },
     });
-    if (allPrograms.length === 0) {
+    if (!allPrograms.length) {
       throw new HttpException(
         'Туториал с такой программой не найден',
         HttpStatus.NOT_FOUND,
@@ -184,7 +184,7 @@ export class TutorialService {
         }
       }
     }
-    if (filteredTutorials.length === 0) {
+    if (!filteredTutorials.length) {
       throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
@@ -199,9 +199,7 @@ export class TutorialService {
 
   async showLikedByName(text, page, size, userId) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
     this.checkUser(user);
 
@@ -230,7 +228,7 @@ export class TutorialService {
       );
       return { ...tutorial, favorite: isFavorite };
     });
-    if (updatedTutorials.length === 0) {
+    if (!updatedTutorials.length) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
@@ -243,38 +241,35 @@ export class TutorialService {
     }
   }
 
-  async showLikedByProgram(program, page, size, userId) {
+  async showLikedByDifficulty(difficulty, page, size, userId) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
     this.checkUser(user);
 
     const allTutorials = await this.prisma.tutorial.findMany({
       where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
+        difficulty: {
+          contains: difficulty[0].toUpperCase() + difficulty.slice(1),
           mode: 'insensitive',
         },
       },
     });
-    if (allTutorials.length === 0) {
+    if (!allTutorials.length) {
       throw new HttpException(
         'Кисть с такой программой не найдена',
         HttpStatus.NOT_FOUND,
       );
     }
-    const userTutorials = user.tutorials;
     const updatedTutorials = allTutorials.map((tutorial) => {
-      const isFavorite = userTutorials.some(
+      const isFavorite = user.tutorials.some(
         (userBrushes) => userBrushes === tutorial.id,
       );
-      if (program[0].toUpperCase() + program.slice(1) === tutorial.program) {
+      if (tutorial.difficulty.includes(difficulty)) {
         return { ...tutorial, favorite: isFavorite };
       }
     });
-    if (updatedTutorials.length === 0) {
+    if (!updatedTutorials.length) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
@@ -284,32 +279,27 @@ export class TutorialService {
     }
   }
 
-  async showLikedByNameAndProgram(program, text, page, size, userId) {
+  async showLikedByNameAndDifficulty(difficulty, text, page, size, userId) {
     const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
     });
     this.checkUser(user);
 
     const allTutorials = await this.prisma.tutorial.findMany({
       where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
+        difficulty: {
+          contains: difficulty[0].toUpperCase() + difficulty.slice(1),
           mode: 'insensitive',
         },
       },
     });
-    if (allTutorials.length === 0) {
+    if (!allTutorials.length) {
       throw new HttpException(
         'Кисть с такой программой не найдена',
         HttpStatus.NOT_FOUND,
       );
     }
-
     text = text.split(' ');
-    const needCount = text.length;
-    const userTutorials = user.tutorials;
     const filteredTutorials = [];
     for (const tutorial of allTutorials) {
       let count = 0;
@@ -319,21 +309,21 @@ export class TutorialService {
           tutorial.title.toLowerCase().includes(word.toLowerCase())
         ) {
           count += 1;
-          if (count == needCount) {
+          if (count == text.length) {
             filteredTutorials.push(tutorial);
           }
         }
       }
     }
     const updatedTutorials = filteredTutorials.map((tutorial) => {
-      const isFavorite = userTutorials.some(
+      const isFavorite = user.tutorials.some(
         (userBrushes) => userBrushes === tutorial.id,
       );
-      if (program[0].toUpperCase() + program.slice(1) === tutorial.program) {
+      if (tutorial.difficulty.includes(difficulty)) {
         return { ...tutorial, favorite: isFavorite };
       }
     });
-    if (updatedTutorials.length === 0) {
+    if (!updatedTutorials.length) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;

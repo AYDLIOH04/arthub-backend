@@ -22,12 +22,12 @@ export class TutorialDto {
   description: string;
 
   @ApiProperty({
-    example: 'program',
-    description: 'Программа, к которой относится туториал',
+    example: 'difficulty',
+    description: 'Уровень сложности туториала',
   })
   @IsNotEmpty()
   @IsString()
-  program: string;
+  difficulty: string;
 
   @ApiProperty({ example: 'author', description: 'Автор туториала' })
   @IsNotEmpty()
