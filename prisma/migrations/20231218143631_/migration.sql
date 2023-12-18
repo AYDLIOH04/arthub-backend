@@ -49,8 +49,8 @@ CREATE TABLE "tutorials" (
     "title" TEXT NOT NULL,
     "link" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "program" TEXT NOT NULL,
     "difficulty" TEXT NOT NULL,
+    "duration" TEXT NOT NULL,
     "author" TEXT NOT NULL,
     "image" TEXT NOT NULL,
 

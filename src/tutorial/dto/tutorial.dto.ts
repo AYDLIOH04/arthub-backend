@@ -29,6 +29,14 @@ export class TutorialDto {
   @IsString()
   difficulty: string;
 
+  @ApiProperty({
+    example: 'duration',
+    description: 'Длительность видео',
+  })
+  @IsNotEmpty()
+  @IsString()
+  duration: string;
+
   @ApiProperty({ example: 'author', description: 'Автор туториала' })
   @IsNotEmpty()
   @IsString()

@@ -142,7 +142,15 @@ export class TutorialController {
   @ApiResponse({ status: 200, type: OutputTutorialDto })
   @Public()
   @Get('/:tutorialID')
-  showTutorialByID(@Param('tutorialID') tutorialID: string) {
+  showLikedTutorialByID(@Param('tutorialID') tutorialID: string) {
     return this.tutorialService.showTutorialByID(tutorialID);
+  }
+
+  @Get('/:tutorialID/liked')
+  showTutorialByID(
+    @Param('tutorialID') tutorialID: string,
+    @GetCurrentUserId() userId: number,
+  ) {
+    return this.tutorialService.showLikedTutorialByID(tutorialID, userId);
   }
 }
