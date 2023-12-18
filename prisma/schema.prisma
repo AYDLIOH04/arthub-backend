@@ -64,6 +64,7 @@ model Tutorial {
   link        String
   description String
   difficulty  String
+  duration    String
   author      String
   image       String
 

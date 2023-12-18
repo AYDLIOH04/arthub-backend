@@ -98,6 +98,23 @@ export class TutorialService {
     return { response: cutAllTutorials, totalCount: allTutorials.length };
   }
 
+  async showLikedTutorialByID(tutorialID, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    const tutorial = await this.prisma.tutorial.findUnique({
+      where: { id: parseInt(tutorialID) },
+    });
+    if (tutorial) {
+      const isFavorite = user.tutorials.includes(tutorial.id);
+      return { ...tutorial, favorite: isFavorite };
+    } else {
+      throw new HttpException('Туториал не найден', HttpStatus.NOT_FOUND);
+    }
+  }
+
   async showTutorialByID(tutorialID) {
     const tutorial = await this.prisma.tutorial.findUnique({
       where: { id: parseInt(tutorialID) },

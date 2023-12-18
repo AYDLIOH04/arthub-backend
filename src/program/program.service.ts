@@ -42,7 +42,7 @@ export class ProgramService {
     }
   }
 
-  async addToUser(programmID, userID) {
+  async addAndRemove(programmID, userID) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userID,

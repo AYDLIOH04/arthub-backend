@@ -42,7 +42,7 @@ export class ProgramController {
     @Param('programmID') programmID: string,
     @GetCurrentUserId() userId: number,
   ) {
-    return this.programmService.addToUser(programmID, userId);
+    return this.programmService.addAndRemove(programmID, userId);
   }
 
   @Public()
