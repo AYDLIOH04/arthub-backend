@@ -21,10 +21,10 @@ model User {
 
   login String
 
-  brushes    Int[] @unique
-  references Int[] @unique
-  tutorials  Int[] @unique
-  programs   Int[] @unique
+  brushes    Int[] 
+  references Int[] 
+  tutorials  Int[] 
+  programs   Int[] 
 
   @@map("users")
 }

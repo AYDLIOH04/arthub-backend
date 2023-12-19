@@ -36,7 +36,7 @@ export class TutorialController {
   @Public()
   @UseInterceptors(FileInterceptor('image'))
   @Post('create')
-  createBrush(@Body() dto: TutorialDto, @UploadedFile() image) {
+  createTutorial(@Body() dto: TutorialDto, @UploadedFile() image) {
     return this.tutorialService.createTutorial(dto, image);
   }
 
