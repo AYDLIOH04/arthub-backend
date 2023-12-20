@@ -41,15 +41,17 @@ export class BrushService {
     this.checkUser(user);
     if (!user.brushes.includes(Number(brushID))) {
       const allBrushes = await this.prisma.brush.findMany();
-      for (const brush of allBrushes) {
-        if (Number(brushID) == Number(brush.id)) {
-          await this.prisma.user.update({
-            data: { brushes: { push: Number(brushID) } },
-            where: { id: Number(userID) },
-          });
-          return user;
-        }
+      const userBrush = allBrushes.find(
+        (brush) => Number(brushID) === brush.id,
+      );
+      if (userBrush) {
+        await this.prisma.user.update({
+          data: { brushes: { push: Number(brushID) } },
+          where: { id: Number(userID) },
+        });
+        return user;
       }
+
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const updatedBrushes = user.brushes.filter(
@@ -84,20 +86,7 @@ export class BrushService {
   }
 
   async sortByProgram(program, page, size) {
-    const allBrushes = await this.prisma.brush.findMany({
-      where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (allBrushes.length === 0) {
-      throw new HttpException(
-        'Кисть с такой программой не найдена',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const allBrushes = await this.getAllBrushes(program);
     const startIndex = (page - 1) * size;
     const endIndex = page * size;
     const paginatedBrushes = allBrushes.slice(startIndex, endIndex);
@@ -105,20 +94,7 @@ export class BrushService {
   }
 
   async sortByNameAndProgram(program, text, page, size) {
-    const allBrushes = await this.prisma.brush.findMany({
-      where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (allBrushes.length === 0) {
-      throw new HttpException(
-        'Кисть с такой программой не найдена',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const allBrushes = await this.getAllBrushes(program);
     text = text.split(' ');
     const needCount = text.length;
     const filteredBrushes = [];
@@ -133,14 +109,7 @@ export class BrushService {
         }
       }
     }
-    if (filteredBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
-    } else {
-      const startIndex = (page - 1) * size;
-      const endIndex = page * size;
-      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
-    }
+    return this.paginateBrushes(filteredBrushes, allBrushes, page, size);
   }
 
   async showAllLikedBrushes(page, size, userId) {
@@ -181,14 +150,7 @@ export class BrushService {
         }
       }
     }
-    if (filteredBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
-    } else {
-      const startIndex = (page - 1) * size;
-      const endIndex = page * size;
-      const paginatedBrushes = filteredBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
-    }
+    return this.paginateBrushes(filteredBrushes, allBrushes, page, size);
   }
 
   async showLikedByNameAndProgram(program, text, page, size, userId) {
@@ -199,24 +161,10 @@ export class BrushService {
     });
     this.checkUser(user);
 
-    const allBrushes = await this.prisma.brush.findMany({
-      where: {
-        program: {
-          contains: program[0].toUpperCase() + program.slice(1),
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (allBrushes.length === 0) {
-      throw new HttpException(
-        'Кисть с такой программой не найдена',
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    const allBrushes = await this.getAllBrushes(program);
 
     text = text.split(' ');
     const needCount = text.length;
-    const userBrushes = user.brushes;
     const filteredBrushes = [];
     for (const brush of allBrushes) {
       let count = 0;
@@ -230,21 +178,14 @@ export class BrushService {
       }
     }
     const updatedBrushes = filteredBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
+      const isFavorite = user.brushes.some(
         (userBrushes) => userBrushes === brush.id,
       );
       if (program[0].toUpperCase() + program.slice(1) === brush.program) {
         return { ...brush, favorite: isFavorite };
       }
     });
-    if (updatedBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
-    } else {
-      const startIndex = (page - 1) * size;
-      const endIndex = page * size;
-      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
-    }
+    return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
   }
 
   async showLikedByName(text, page, size, userId) {
@@ -258,7 +199,6 @@ export class BrushService {
     text = text.split(' ');
     const needCount = text.length;
     const allBrushes = await this.prisma.brush.findMany();
-    const userBrushes = user.brushes;
     const filteredBrushes = [];
     for (const brush of allBrushes) {
       let count = 0;
@@ -272,19 +212,12 @@ export class BrushService {
       }
     }
     const updatedBrushes = filteredBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
+      const isFavorite = user.brushes.some(
         (userBrushes) => userBrushes === brush.id,
       );
       return { ...brush, favorite: isFavorite };
     });
-    if (updatedBrushes.length === 0) {
-      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
-    } else {
-      const startIndex = (page - 1) * size;
-      const endIndex = page * size;
-      const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
-      return { response: paginatedBrushes, totalCount: filteredBrushes.length };
-    }
+    return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
   }
 
   async showLikedByProgram(program, page, size, userId) {
@@ -295,6 +228,25 @@ export class BrushService {
     });
     this.checkUser(user);
 
+    const allBrushes = await this.getAllBrushes(program);
+    const updatedBrushes = allBrushes.map((brush) => {
+      const isFavorite = user.brushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
+        return { ...brush, favorite: isFavorite };
+      }
+      return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
+    });
+  }
+
+  checkUser(user) {
+    if (!user) {
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  async getAllBrushes(program: string) {
     const allBrushes = await this.prisma.brush.findMany({
       where: {
         program: {
@@ -309,15 +261,15 @@ export class BrushService {
         HttpStatus.NOT_FOUND,
       );
     }
-    const userBrushes = user.brushes;
-    const updatedBrushes = allBrushes.map((brush) => {
-      const isFavorite = userBrushes.some(
-        (userBrushes) => userBrushes === brush.id,
-      );
-      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
-        return { ...brush, favorite: isFavorite };
-      }
-    });
+    return allBrushes;
+  }
+
+  async paginateBrushes(
+    updatedBrushes: any[],
+    allBrushes: any[],
+    page: number,
+    size: number,
+  ) {
     if (updatedBrushes.length === 0) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
@@ -325,12 +277,6 @@ export class BrushService {
       const endIndex = page * size;
       const paginatedBrushes = updatedBrushes.slice(startIndex, endIndex);
       return { response: paginatedBrushes, totalCount: allBrushes.length };
-    }
-  }
-
-  checkUser(user) {
-    if (!user) {
-      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
 }

@@ -10,8 +10,6 @@ export class ReferenceDto {
   @IsString()
   hashtag: string;
 
-  @IsNotEmpty()
-  @IsString()
   @Type(() => File)
   image: string;
 }
