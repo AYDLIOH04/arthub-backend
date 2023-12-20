@@ -273,7 +273,7 @@ export class ReferenceService {
       const paginatedReferences = updatedReferences.slice(startIndex, endIndex);
       return {
         response: paginatedReferences,
-        totalCount: allReferences.length,
+        totalCount: updatedReferences.length,
       };
     }
   }
