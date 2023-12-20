@@ -233,33 +233,49 @@ export class ReferenceService {
     }
   }
 
-  async showLikedByTag(tag, page, size, userId) {
+  async showLikedByTag(hashtags, page, size, userId) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
       },
     });
     this.checkUser(user);
-    const allReferences = await this.prisma.reference.findMany({
-      where: {
-        hashtag: {
-          contains: tag,
-          mode: 'insensitive',
-        },
-      },
-    });
-    const userReferences = user.references;
-    const cutAllReferences = await this.prisma.reference.findMany({
-      skip: (page - 1) * size,
-      take: Number(size),
-    });
-    const updatedReferences = cutAllReferences.map((reference) => {
-      const isFavorite = userReferences.some(
+
+    hashtags = hashtags.split(' ');
+    const needCount = hashtags.length;
+    const allReferences = await this.prisma.reference.findMany();
+    const filteredReferences = [];
+    for (const reference of allReferences) {
+      let count = 0;
+      for (const tag of hashtags) {
+        if (
+          reference &&
+          reference.hashtag.toLowerCase().includes(tag.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredReferences.push(reference);
+          }
+        }
+      }
+    }
+    const updatedReferences = filteredReferences.map((reference) => {
+      const isFavorite = user.references.some(
         (userBrushes) => userBrushes === reference.id,
       );
       return { ...reference, favorite: isFavorite };
     });
-    return { response: updatedReferences, totalCount: allReferences.length };
+    if (updatedReferences.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      const startIndex = (page - 1) * size;
+      const endIndex = page * size;
+      const paginatedReferences = updatedReferences.slice(startIndex, endIndex);
+      return {
+        response: paginatedReferences,
+        totalCount: allReferences.length,
+      };
+    }
   }
 
   async showLikedByName(text, page, size, userId) {
@@ -308,7 +324,7 @@ export class ReferenceService {
     }
   }
 
-  async showLikedByNameAndTag(tag, text, page, size, userId) {
+  async showLikedByNameAndTag(hashtags, text, page, size, userId) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
@@ -316,26 +332,30 @@ export class ReferenceService {
     });
     this.checkUser(user);
 
-    const allReferences = await this.prisma.reference.findMany({
-      where: {
-        hashtag: {
-          contains: tag,
-          mode: 'insensitive',
-        },
-      },
-    });
-    if (allReferences.length === 0) {
-      throw new HttpException(
-        'Кисть с такой программой не найдена',
-        HttpStatus.NOT_FOUND,
-      );
+    hashtags = hashtags.split(' ');
+    const needCount1 = hashtags.length;
+    const allReferences = await this.prisma.reference.findMany();
+    const filteredReferences1 = [];
+    for (const reference of allReferences) {
+      let count = 0;
+      for (const word of hashtags) {
+        if (
+          reference &&
+          reference.hashtag.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount1) {
+            filteredReferences1.push(reference);
+          }
+        }
+      }
     }
 
     text = text.split(' ');
     const needCount = text.length;
     const userReferences = user.references;
     const filteredReferences = [];
-    for (const reference of allReferences) {
+    for (const reference of filteredReferences1) {
       let count = 0;
       for (const word of text) {
         if (
@@ -349,20 +369,15 @@ export class ReferenceService {
         }
       }
     }
-    const updatedReferences = filteredReferences.map((reference) => {
-      const isFavorite = userReferences.some(
-        (userBrushes) => userBrushes === reference.id,
-      );
-      if (reference.hashtag.includes(tag)) {
-        return { ...reference, favorite: isFavorite };
-      }
-    });
-    if (updatedReferences.length === 0) {
+    if (filteredReferences.length === 0) {
       throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
     } else {
       const startIndex = (page - 1) * size;
       const endIndex = page * size;
-      const paginatedReferences = updatedReferences.slice(startIndex, endIndex);
+      const paginatedReferences = filteredReferences.slice(
+        startIndex,
+        endIndex,
+      );
       return {
         response: paginatedReferences,
         totalCount: filteredReferences.length,
