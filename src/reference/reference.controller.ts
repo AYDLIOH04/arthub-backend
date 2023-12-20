@@ -111,10 +111,4 @@ export class ReferenceController {
       throw new HttpException('Bad request', HttpStatus.NOT_FOUND);
     }
   }
-
-  @Public()
-  @Get('/:referenceID')
-  showBrushByID(@Param('referenceID') referenceID: string) {
-    return this.referenceService.showReferenceByID(referenceID);
-  }
 }

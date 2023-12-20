@@ -233,17 +233,6 @@ export class ReferenceService {
     }
   }
 
-  async showReferenceByID(referenceID) {
-    const reference = await this.prisma.reference.findUnique({
-      where: { id: parseInt(referenceID) },
-    });
-    if (reference) {
-      return reference;
-    } else {
-      throw new HttpException('Референс не найден', HttpStatus.NOT_FOUND);
-    }
-  }
-
   async showLikedByTag(tag, page, size, userId) {
     const user = await this.prisma.user.findUnique({
       where: {
