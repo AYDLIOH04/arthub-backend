@@ -12,13 +12,10 @@ export class ReferenceService {
 
   async createReference(dto: ReferenceDto, image: any) {
     const allReferences = await this.prisma.reference.findMany();
-    let flag = true;
-    for (let i = 0; i < allReferences.length; i++) {
-      if (dto.title == allReferences[i].title) {
-        flag = false;
-      }
-    }
-    if (flag) {
+    const hasDuplicate = allReferences.some(
+      (reference) => reference.title === dto.title,
+    );
+    if (!hasDuplicate) {
       const fileName = await this.fileService.createFile(image);
       const newReference = await this.prisma.reference.create({
         data: { ...dto, image: `${process.env.URL}/${fileName}` },
@@ -27,7 +24,7 @@ export class ReferenceService {
     } else {
       throw new HttpException(
         'Уже существует референс с таким заголовком',
-        HttpStatus.NOT_MODIFIED,
+        HttpStatus.FORBIDDEN,
       );
     }
   }
