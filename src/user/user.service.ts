@@ -203,7 +203,17 @@ export class UserService {
     const programList = await this.prisma.program.findMany({
       where: { id: { in: user.programs } },
     });
-    return programList;
+    const selectedPrograms = programList.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+        link: program.link,
+      };
+    });
+    return selectedPrograms;
   }
 
   checkUser(user) {

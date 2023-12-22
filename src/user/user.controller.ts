@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { GetCurrentUserId, Public } from '../common/decorators';
 
-@Controller('users')
+@Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
   @Public()

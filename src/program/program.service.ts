@@ -100,11 +100,11 @@ export class ProgramService {
   }
 
   async showProgram(name) {
-    const programs = await this.prisma.program.findMany({
+    const program = await this.prisma.program.findMany({
       where: { name: { startsWith: name[0].toUpperCase() + name.slice(1) } },
       take: 1,
     });
-    return this.toList(programs);
+    return program.map((program) => this.toList(program));
   }
 
   async sortBySystemAndName(name) {
@@ -368,8 +368,10 @@ export class ProgramService {
       link: program.link,
       systems: program.systems.split(' '),
       description: program.description,
-      pluses: program.pluses.split('\n'),
-      minuses: program.minuses.split('\n'),
+      pluses: program.pluses.split(/\r\n|\n|\r/).filter((item) => item !== ''),
+      minuses: program.minuses
+        .split(/\r\n|\n|\r/)
+        .filter((item) => item !== ''),
       examples: program.examples.split(' '),
       logo: program.logo,
     };
