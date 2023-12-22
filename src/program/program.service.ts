@@ -101,7 +101,8 @@ export class ProgramService {
 
   async showProgram(name) {
     const programs = await this.prisma.program.findMany({
-      where: { name: { equals: name, mode: 'insensitive' } },
+      where: { name: { startsWith: name[0].toUpperCase() + name.slice(1) } },
+      take: 1,
     });
     return this.toList(programs);
   }
