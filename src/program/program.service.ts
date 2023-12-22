@@ -100,8 +100,16 @@ export class ProgramService {
   }
 
   async showProgram(name) {
+    const decodedName = decodeURIComponent(name)
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
     const programs = await this.prisma.program.findMany({
-      where: { name: { startsWith: name[0].toUpperCase() + name.slice(1) } },
+      where: {
+        name: {
+          startsWith: decodedName[0].toUpperCase() + decodedName.slice(1),
+        },
+      },
       take: 1,
     });
     return programs.map((program) => this.toList(program))[0];
