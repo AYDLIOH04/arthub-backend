@@ -367,8 +367,8 @@ export class ProgramService {
       link: program.link,
       systems: program.systems.split(' '),
       description: program.description,
-      pluses: program.pluses.split('###'),
-      minuses: program.pluses.split('###'),
+      pluses: program.pluses.split('\n'),
+      minuses: program.pluses.split('\n'),
       examples: program.examples.split(' '),
       logo: program.logo,
     };
