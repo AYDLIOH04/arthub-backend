@@ -368,8 +368,8 @@ export class ProgramService {
       link: program.link,
       systems: program.systems.split(' '),
       description: program.description,
-      pluses: program.pluses.split('\\n'),
-      minuses: program.pluses.split('\\n'),
+      pluses: program.pluses.split('\n'),
+      minuses: program.minuses.split('\n'),
       examples: program.examples.split(' '),
       logo: program.logo,
     };
