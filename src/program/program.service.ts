@@ -100,10 +100,10 @@ export class ProgramService {
   }
 
   async showProgram(name) {
-    const program = await this.prisma.program.findUnique({
-      where: { name: name[0].toUpperCase() + name.slice(1) },
+    const programs = await this.prisma.program.findMany({
+      where: { name: { equals: name, mode: 'insensitive' } },
     });
-    return this.toList(program);
+    return this.toList(programs);
   }
 
   async sortBySystemAndName(name) {
