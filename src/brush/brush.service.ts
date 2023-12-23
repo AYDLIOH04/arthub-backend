@@ -150,7 +150,7 @@ export class BrushService {
         }
       }
     }
-    return this.paginateBrushes(filteredBrushes, allBrushes, page, size);
+    return this.paginateBrushes(filteredBrushes, filteredBrushes, page, size);
   }
 
   async showLikedByNameAndProgram(program, text, page, size, userId) {
@@ -185,7 +185,31 @@ export class BrushService {
         return { ...brush, favorite: isFavorite };
       }
     });
-    return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
+    return this.paginateBrushes(updatedBrushes, updatedBrushes, page, size);
+  }
+
+  async showLikedByProgram(program, page, size, userId) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    this.checkUser(user);
+
+    const allBrushes = await this.getAllBrushes(program);
+    const updatedBrushes = allBrushes.map((brush) => {
+      const isFavorite = user.brushes.some(
+        (userBrushes) => userBrushes === brush.id,
+      );
+      const progr = decodeURIComponent(program)
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      if (progr[0].toUpperCase() + progr.slice(1) === brush.program) {
+        return { ...brush, favorite: isFavorite };
+      }
+    });
+    return this.paginateBrushes(updatedBrushes, updatedBrushes, page, size);
   }
 
   async showLikedByName(text, page, size, userId) {
@@ -217,27 +241,7 @@ export class BrushService {
       );
       return { ...brush, favorite: isFavorite };
     });
-    return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
-  }
-
-  async showLikedByProgram(program, page, size, userId) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
-    this.checkUser(user);
-
-    const allBrushes = await this.getAllBrushes(program);
-    const updatedBrushes = allBrushes.map((brush) => {
-      const isFavorite = user.brushes.some(
-        (userBrushes) => userBrushes === brush.id,
-      );
-      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
-        return { ...brush, favorite: isFavorite };
-      }
-      return this.paginateBrushes(updatedBrushes, allBrushes, page, size);
-    });
+    return this.paginateBrushes(updatedBrushes, updatedBrushes, page, size);
   }
 
   checkUser(user) {
