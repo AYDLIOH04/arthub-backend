@@ -81,6 +81,7 @@ model Program {
   systems     String
   description String
   logo        String
+  site        String?
   pluses      String
   minuses     String
   examples    String
