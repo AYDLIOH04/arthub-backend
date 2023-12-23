@@ -112,7 +112,7 @@ export class ProgramService {
       },
       take: 1,
     });
-    return programs.map((program) => this.toList(program))[0];
+    return programs.map((program) => this.toList1(program))[0];
   }
 
   async sortBySystemAndName(name) {
@@ -383,6 +383,25 @@ export class ProgramService {
         ? program.minuses.split(/\r\n|\n|\r/).filter((item) => item !== '')
         : [],
       examples: program.examples ? program.examples.split(' ') : [],
+      logo: program.logo,
+    };
+  }
+
+  toList1(program) {
+    return {
+      id: program.id,
+      name: program.name,
+      link: program.link,
+      systems: program.systems ? program.systems.split(' ') : [],
+      description: program.description,
+      pluses: program.pluses
+        ? program.pluses.split(/\r\n|\n|\r/).filter((item) => item !== '')
+        : [],
+      minuses: program.minuses
+        ? program.minuses.split(/\r\n|\n|\r/).filter((item) => item !== '')
+        : [],
+      examples: program.examples ? program.examples.split(' ') : [],
+      site: program.site,
       logo: program.logo,
     };
   }

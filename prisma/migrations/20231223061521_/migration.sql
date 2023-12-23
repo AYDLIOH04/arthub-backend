@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "programs" ADD COLUMN     "site";
+ALTER TABLE "programs" ADD COLUMN     "site" TEXT DEFAULT '';
