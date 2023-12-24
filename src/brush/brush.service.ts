@@ -181,7 +181,11 @@ export class BrushService {
       const isFavorite = user.brushes.some(
         (userBrushes) => userBrushes === brush.id,
       );
-      if (program[0].toUpperCase() + program.slice(1) === brush.program) {
+      const progr = decodeURIComponent(program)
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+      if (progr[0].toUpperCase() + progr.slice(1) === brush.program) {
         return { ...brush, favorite: isFavorite };
       }
     });

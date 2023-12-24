@@ -56,16 +56,19 @@ export class ProgramController {
 
   @Public()
   @Get()
-  showAllPrograms(
+  async showAllPrograms(
     @Query('system') system: string,
     @Query('search') search: string,
   ) {
+    if (system && search) {
+      return await this.programmService.showByNameAndSystem(system, search);
+    }
     if (system) {
-      return this.programmService.sortBySystem(system);
+      return await this.programmService.sortBySystem(system);
     } else if (search) {
-      return this.programmService.sortByName(search);
+      return await this.programmService.sortByName(search);
     } else {
-      return this.programmService.showAllPrograms();
+      return await this.programmService.showAllPrograms();
     }
   }
 

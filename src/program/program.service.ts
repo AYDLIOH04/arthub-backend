@@ -363,6 +363,55 @@ export class ProgramService {
     }
   }
 
+  async showByNameAndSystem(system, text) {
+    const allPrograms = await this.prisma.program.findMany({
+      where: {
+        systems: {
+          contains: system[0].toUpperCase() + system.slice(1),
+          mode: 'insensitive',
+        },
+      },
+    });
+    if (allPrograms.length === 0) {
+      throw new HttpException(
+        'Кисть с такой программой не найдена',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    text = text.split(' ');
+    const needCount = text.length;
+    const filteredPrograms = [];
+    for (const program of allPrograms) {
+      let count = 0;
+      for (const word of text) {
+        if (
+          program &&
+          program.name.toLowerCase().includes(word.toLowerCase())
+        ) {
+          count += 1;
+          if (count == needCount) {
+            filteredPrograms.push(program);
+          }
+        }
+      }
+    }
+    const selectedPrograms = filteredPrograms.map((program) => {
+      return {
+        id: program.id,
+        name: program.name,
+        systems: program.systems.split(' '),
+        description: program.description,
+        logo: program.logo,
+      };
+    });
+    if (selectedPrograms.length === 0) {
+      throw new HttpException('Кисть не найдена', HttpStatus.NOT_FOUND);
+    } else {
+      return selectedPrograms;
+    }
+  }
+
   checkUser(user) {
     if (!user) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
