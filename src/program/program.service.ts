@@ -106,8 +106,9 @@ export class ProgramService {
       .join(' ');
     const programs = await this.prisma.program.findMany({
       where: {
-        name: {
-          startsWith: decodedName[0].toUpperCase() + decodedName.slice(1),
+        systems: {
+          contains: decodedName[0].toUpperCase() + decodedName.slice(1),
+          mode: 'insensitive',
         },
       },
       take: 1,
