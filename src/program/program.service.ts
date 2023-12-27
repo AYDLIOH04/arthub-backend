@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
 import { ProgramFullDto } from './dto/fullProgram.dto';
+import { Console } from 'console';
 
 @Injectable()
 export class ProgramService {
@@ -100,20 +101,13 @@ export class ProgramService {
   }
 
   async showProgram(name) {
-    const decodedName = decodeURIComponent(name)
-      .split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-    const programs = await this.prisma.program.findMany({
-      where: {
-        systems: {
-          contains: decodedName[0].toUpperCase() + decodedName.slice(1),
-          mode: 'insensitive',
-        },
-      },
-      take: 1,
-    });
-    return programs.map((program) => this.toList1(program))[0];
+    const decodedName = decodeURIComponent(name);
+    const programs = await this.prisma.program.findMany();
+    for (const program of programs) {
+      if (program.name.toLowerCase().includes(decodedName.toLowerCase())) {
+        return this.toList1(program);
+      }
+    }
   }
 
   async sortBySystemAndName(name) {
